@@ -44,13 +44,13 @@ features/
 
 1. Each feature must be in its own directory under `features/`
 2. Directory name must be kebab-case (e.g., `my-feature`)
-3. Feature must include exactly two files:
+3. Feature must include at least these two files:
    - Main PHP file with the feature code
    - `info.php` with feature metadata
 
 ### info.php Format
 
-The `info.php` file must return an array with exactly these keys:
+The `info.php` file must return an array with these keys:
 ```php
 <?php
 return [
