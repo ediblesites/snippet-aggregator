@@ -45,7 +45,7 @@ function snippet_aggregator_register_recipe_post_type() {
 
     register_post_type('recipe', $args);
     
-    Snippet_Aggregator_Logger::info('custom-post-types', 'Recipe post type registered');
+    snippet_aggregator_log('custom-post-types', 'Recipe post type registered', 'info');
 }
 
 // Register taxonomy for recipe categories
@@ -77,7 +77,7 @@ function snippet_aggregator_register_recipe_taxonomy() {
 
     register_taxonomy('recipe_category', array('recipe'), $args);
     
-    Snippet_Aggregator_Logger::info('custom-post-types', 'Recipe category taxonomy registered');
+    snippet_aggregator_log('custom-post-types', 'Recipe category taxonomy registered', 'info');
 }
 
 // Add custom meta box for recipe details
@@ -139,7 +139,7 @@ function snippet_aggregator_save_recipe_meta($post_id, $post) {
         update_post_meta($post_id, '_recipe_servings', sanitize_text_field($_POST['servings']));
     }
     
-    Snippet_Aggregator_Logger::info('custom-post-types', sprintf('Recipe meta saved for post ID %d', $post_id));
+    snippet_aggregator_log('custom-post-types', sprintf('Recipe meta saved for post ID %d', $post_id), 'info');
 }
 
 // Add custom columns to the recipe list

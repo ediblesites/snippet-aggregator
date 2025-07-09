@@ -38,7 +38,11 @@ my-plugin/
 
 ### Feature Organization
 - Each feature in its own directory under `/features/`
-- Self-contained with `init.php` entry point
+- Must contain `info.php` that defines:
+  - Feature name
+  - Description
+  - Main file path
+- Main file specified in info.php is the entry point
 - Can include multiple related files, templates, assets
 - Access to shared utilities from `/core/shared/`
 
@@ -264,43 +268,36 @@ function display_webhook_settings() {
 Dynamic feature discovery and management:
 
 ```php
-// In core/feature-loader.php
-class Feature_Loader {
-    private $features = [];
+// In core/admin-interface.php
+function get_available_features() {
+    $features = [];
+    $features_dir = PLUGIN_PATH . 'features';
     
-    public function discover_features() {
-        $features_dir = plugin_dir_path(__FILE__) . '../features/';
-        foreach (scandir($features_dir) as $dir) {
-            if (is_dir($features_dir . $dir) && $dir !== '.' && $dir !== '..') {
-                $init_file = $features_dir . $dir . '/init.php';
-                if (file_exists($init_file)) {
-                    $this->features[$dir] = [
-                        'path' => $init_file,
-                        'enabled' => get_option("my_plugin_feature_{$dir}", false)
-                    ];
-                }
-            }
+    foreach (scandir($features_dir) as $dir) {
+        if ($dir === '.' || $dir === '..') continue;
+        
+        $info_file = $features_dir . '/' . $dir . '/info.php';
+        if (!file_exists($info_file)) {
+            log($dir, 'No info.php found', 'warning');
+            continue;
         }
+        
+        $info = include $info_file;
+        if (!isset($info['name'], $info['description'], $info['main_file'])) {
+            log($dir, 'Invalid info.php structure', 'warning');
+            continue;
+        }
+        
+        $main_file = $features_dir . '/' . $dir . '/' . $info['main_file'];
+        if (!file_exists($main_file)) {
+            log($dir, sprintf('Main file %s not found', $info['main_file']), 'warning');
+            continue;
+        }
+        
+        $features[$dir] = $info;
     }
     
-    public function load_enabled_features() {
-        foreach ($this->features as $feature_id => $feature) {
-            if ($feature['enabled']) {
-                $this->load_feature($feature_id, $feature['path']);
-            }
-        }
-    }
-    
-    private function load_feature($feature_id, $path) {
-        try {
-            require_once $path;
-            do_action("my_plugin_feature_loaded_{$feature_id}");
-        } catch (Exception $e) {
-            error_log("Feature {$feature_id} failed: " . $e->getMessage());
-            update_option("my_plugin_feature_{$feature_id}", false);
-            do_action("my_plugin_feature_failed_{$feature_id}", $e);
-        }
-    }
+    return $features;
 }
 ```
 
@@ -439,7 +436,7 @@ Feature-specific logging system:
 // In core/shared/logger.php
 class Logger {
     public static function log($feature_id, $message, $level = 'info') {
-        if (!WP_DEBUG) {
+        if (!WP_DEBUG && !get_option('snippet_aggregator_debug_mode', false)) {
             return;
         }
         
@@ -451,9 +448,7 @@ class Logger {
 }
 ```
 
-## Success Metrics
-- Seamless automatic updates from GitHub
-- Individual feature toggles work reliably
-- No feature cross-contamination on errors
-- Reduced code duplication through shared utilities
-- Easy addition of new features without architectural changes
+**Debug Mode**: A setting in the admin interface that enables debug-level logging to WordPress error log. When enabled along with WP_DEBUG, provides detailed information about feature loading, webhook processing, and other internal operations.
+
+**Setup**: Admin interface includes a simple toggle for debug mode in general settings.
+

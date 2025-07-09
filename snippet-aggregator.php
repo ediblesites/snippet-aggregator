@@ -18,13 +18,13 @@ define('SNIPPET_AGGREGATOR_VERSION', '1.0.0');
 define('SNIPPET_AGGREGATOR_FILE', __FILE__);
 define('SNIPPET_AGGREGATOR_PATH', plugin_dir_path(__FILE__));
 define('SNIPPET_AGGREGATOR_URL', plugin_dir_url(__FILE__));
+define('SNIPPET_AGGREGATOR_SETTINGS', 'snippet_aggregator_settings');
 
 // Load core functionality
-require_once SNIPPET_AGGREGATOR_PATH . 'core/shared/helpers.php';
 require_once SNIPPET_AGGREGATOR_PATH . 'core/shared/database.php';
 require_once SNIPPET_AGGREGATOR_PATH . 'core/shared/logger.php';
 require_once SNIPPET_AGGREGATOR_PATH . 'core/updater.php';
-require_once SNIPPET_AGGREGATOR_PATH . 'core/webhook.php';  // Add GitHub webhook support
+require_once SNIPPET_AGGREGATOR_PATH . 'core/webhook.php';
 require_once SNIPPET_AGGREGATOR_PATH . 'core/admin-interface.php';
 
 // Plugin activation hook
@@ -51,10 +51,10 @@ function snippet_aggregator_load_features() {
     $features = snippet_aggregator_get_available_features();
     
     foreach ($features as $feature_id => $feature) {
-        if (snippet_aggregator_is_feature_enabled($feature_id)) {
+        if (get_option("snippet_aggregator_feature_{$feature_id}", false)) {
             // Load feature
             if (!isset($feature['main_file'])) {
-                Snippet_Aggregator_Logger::error($feature_id, 'No main file specified for feature');
+                snippet_aggregator_log($feature_id, 'No main file specified for feature', 'error');
                 continue;
             }
 
@@ -63,12 +63,12 @@ function snippet_aggregator_load_features() {
             try {
                 if (file_exists($feature_file)) {
                     require_once $feature_file;
-                    Snippet_Aggregator_Logger::info($feature_id, sprintf('Feature loaded successfully from %s', $feature_file));
+                    snippet_aggregator_log($feature_id, sprintf('Feature loaded successfully from %s', $feature_file), 'info');
                 } else {
-                    Snippet_Aggregator_Logger::error($feature_id, sprintf('Feature file %s not found', $feature_file));
+                    snippet_aggregator_log($feature_id, sprintf('Feature file %s not found', $feature_file), 'error');
                 }
             } catch (Exception $e) {
-                Snippet_Aggregator_Logger::error($feature_id, 'Failed to load feature: ' . $e->getMessage());
+                snippet_aggregator_log($feature_id, 'Failed to load feature: ' . $e->getMessage(), 'error');
             }
         }
     }
