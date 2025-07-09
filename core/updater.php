@@ -9,19 +9,27 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Initialize GitHub updater
-add_action('plugins_loaded', 'snippet_aggregator_init_updater');
+// Register GitHub Plugin URI header
+add_filter('extra_plugin_headers', function($headers) {
+    $headers[] = 'GitHub Plugin URI';
+    return $headers;
+});
 
 function snippet_aggregator_get_updater() {
     static $updater = null;
     
     if ($updater === null) {
+        snippet_aggregator_log('updater', 'Initializing updater - existing instance was null', 'debug');
+        
         // Get GitHub repo from plugin header
         if (!function_exists('get_plugin_data')) {
             require_once ABSPATH . 'wp-admin/includes/plugin.php';
         }
         $plugin_data = get_plugin_data(SNIPPET_AGGREGATOR_FILE);
+        snippet_aggregator_log('updater', 'Plugin data: ' . print_r($plugin_data, true), 'debug');
+        
         $github_repo = $plugin_data['GitHub Plugin URI'] ?? '';
+        snippet_aggregator_log('updater', 'GitHub repo from header: ' . $github_repo, 'debug');
         
         // TODO: Future setting in admin
         // $github_repo = get_option('snippet_aggregator_github_repo');
@@ -36,6 +44,7 @@ function snippet_aggregator_get_updater() {
                 SNIPPET_AGGREGATOR_FILE,
                 'snippet-aggregator'
             );
+            snippet_aggregator_log('updater', 'Updater initialized successfully', 'debug');
             
             // TODO: For future private repository support
             // $updater->setAuthentication($github_token);
@@ -43,14 +52,14 @@ function snippet_aggregator_get_updater() {
             // TODO: Future setting in admin
             // $updater->setBranch(get_option('snippet_aggregator_github_branch', 'master'));
             $updater->setBranch('master');
+        } else {
+            snippet_aggregator_log('updater', 'Failed to initialize updater - GitHub repo URL was empty', 'error');
         }
+    } else {
+        snippet_aggregator_log('updater', 'Using existing updater instance', 'debug');
     }
     
     return $updater;
-}
-
-function snippet_aggregator_init_updater() {
-    snippet_aggregator_get_updater();
 }
 
 // Register settings
