@@ -127,14 +127,6 @@ function snippet_aggregator_sanitize_github_branch($value) {
     return $value;
 }
 
-function snippet_aggregator_sanitize_webhook_secret($value) {
-    $value = sanitize_text_field($value);
-    if (empty($value)) {
-        $value = wp_generate_password(32, false);
-    }
-    return $value;
-}
-
 // Add update check action for webhook
 add_action('snippet_aggregator_update_check', 'snippet_aggregator_check_for_updates');
 
