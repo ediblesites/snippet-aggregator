@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Initialize GitHub updater
-add_action('init', 'snippet_aggregator_init_updater');
+add_action('plugins_loaded', 'snippet_aggregator_init_updater');
 
 function snippet_aggregator_get_updater() {
     static $updater = null;

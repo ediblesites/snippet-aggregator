@@ -39,16 +39,13 @@ function snippet_aggregator_handle_github_webhook() {
             // Get the default branch from the repository data
             $default_branch = $data['repository']['default_branch'] ?? 'master';
             
-            // Extract the ref from the push event (if this is a push event)
+            // Extract the ref from the push event
             $ref = $data['ref'] ?? '';
             $branch = str_replace('refs/heads/', '', $ref);
             
             // Only process pushes to the default branch
             if ($branch === $default_branch) {
-                // Check for plugin updates
-                if (function_exists('snippet_aggregator_check_for_updates')) {
-                    snippet_aggregator_check_for_updates();
-                }
+                snippet_aggregator_check_for_updates();
             }
             
             wp_die('OK', 200);
