@@ -55,7 +55,6 @@ The plugin provides two admin interfaces:
      - Auto-generated secret in readonly text field
      - One-click copy button for secret
      - "Regenerate Secret" button with confirmation
-     - Clear warning that regeneration requires GitHub update
    - All fields use standard WordPress settings API
    - Changes saved via standard WordPress form submission
 
@@ -64,8 +63,8 @@ The plugin provides two admin interfaces:
 - Must contain `info.php` that defines:
   - Feature name
   - Description
-  - Main file path
-- Main file specified in info.php is the entry point
+  - Entry point file name
+- The specified entry point file contains the feature's core functionality
 - Can include additional assets (CSS, JS, templates)
 - Access to shared utilities for common functionality
 - Features can be enabled/disabled without plugin restart
