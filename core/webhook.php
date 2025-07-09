@@ -17,32 +17,47 @@ function snippet_aggregator_handle_github_webhook() {
     $signature = $_SERVER['HTTP_X_HUB_SIGNATURE_256'] ?? '';
     
     if (!snippet_aggregator_verify_github_signature($payload, $signature)) {
-        snippet_aggregator_log('webhook', 'Invalid webhook signature', 'error');
         wp_die('Unauthorized', 401);
     }
     
     // Parse webhook data
     $data = json_decode($payload, true);
     if (!is_array($data)) {
-        snippet_aggregator_log('webhook', 'Invalid webhook payload', 'error');
         wp_die('Invalid payload', 400);
     }
     
-    // Check if this is a push to the tracked branch
-    $tracked_branch = get_option('snippet_aggregator_github_branch', 'main');
-    $ref = $data['ref'] ?? '';
-    if ($ref !== "refs/heads/{$tracked_branch}") {
-        snippet_aggregator_log('webhook', sprintf('Ignoring push to %s (tracking %s)', $ref, $tracked_branch), 'info');
-        wp_die('OK', 200);
-    }
+    // Get the event type
+    $event_type = $_SERVER['HTTP_X_GITHUB_EVENT'] ?? '';
     
-    // Check for plugin updates
-    if (function_exists('snippet_aggregator_check_for_updates')) {
-        snippet_aggregator_log('webhook', 'Checking for updates', 'info');
-        snippet_aggregator_check_for_updates();
+    switch ($event_type) {
+        case 'ping':
+            // This is the initial webhook test, just return success
+            wp_die('OK', 200);
+            break;
+            
+        case 'push':
+            // Get the default branch from the repository data
+            $default_branch = $data['repository']['default_branch'] ?? 'master';
+            
+            // Extract the ref from the push event (if this is a push event)
+            $ref = $data['ref'] ?? '';
+            $branch = str_replace('refs/heads/', '', $ref);
+            
+            // Only process pushes to the default branch
+            if ($branch === $default_branch) {
+                // Check for plugin updates
+                if (function_exists('snippet_aggregator_check_for_updates')) {
+                    snippet_aggregator_check_for_updates();
+                }
+            }
+            
+            wp_die('OK', 200);
+            break;
+            
+        default:
+            // Ignore other event types
+            wp_die('Unsupported event type', 200);
     }
-    
-    wp_die('OK', 200);
 }
 
 function snippet_aggregator_verify_github_signature($payload, $signature) {

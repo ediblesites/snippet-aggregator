@@ -16,9 +16,15 @@ function snippet_aggregator_get_updater() {
     static $updater = null;
     
     if ($updater === null) {
+        // Get GitHub repo from plugin header
+        if (!function_exists('get_plugin_data')) {
+            require_once ABSPATH . 'wp-admin/includes/plugin.php';
+        }
+        $plugin_data = get_plugin_data(SNIPPET_AGGREGATOR_FILE);
+        $github_repo = $plugin_data['GitHub Plugin URI'] ?? '';
+        
         // TODO: Future setting in admin
         // $github_repo = get_option('snippet_aggregator_github_repo');
-        $github_repo = "https://github.com/ediblesites/snippet-aggregator";
         
         // TODO: For future private repository support
         // $github_token = get_option('snippet_aggregator_github_token');

@@ -3,7 +3,8 @@
  * Plugin Name: Snippet Aggregator
  * Description: A self-updating WordPress plugin that manages internal functionality through feature toggles.
  * Version: 1.0.0
- * Author: Your Name
+ * Author: Adam Marash
+ * GitHub Plugin URI: https://github.com/ediblesites/snippet-aggregator
  * License: GPL v2 or later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: snippet-aggregator
