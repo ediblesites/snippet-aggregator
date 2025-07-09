@@ -14,9 +14,6 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-// Load Composer autoloader
-require_once __DIR__ . '/vendor/autoload.php';
-
 // Define plugin constants
 define('SNIPPET_AGGREGATOR_VERSION', '1.0.7');
 define('SNIPPET_AGGREGATOR_FILE', __FILE__);
@@ -24,11 +21,27 @@ define('SNIPPET_AGGREGATOR_PATH', plugin_dir_path(__FILE__));
 define('SNIPPET_AGGREGATOR_URL', plugin_dir_url(__FILE__));
 define('SNIPPET_AGGREGATOR_SETTINGS', 'snippet_aggregator_settings');
 
+// Check for WP Pusher dependency
+add_action('admin_init', 'snippet_aggregator_check_dependencies');
+
+function snippet_aggregator_check_dependencies() {
+    if (!class_exists('WP_Pusher')) {
+        add_action('admin_notices', 'snippet_aggregator_dependency_notice');
+        return;
+    }
+}
+
+function snippet_aggregator_dependency_notice() {
+    ?>
+    <div class="notice notice-error">
+        <p><?php _e('Snippet Aggregator requires WP Pusher to be installed and activated. Please install WP Pusher to enable automatic updates.', 'snippet-aggregator'); ?></p>
+    </div>
+    <?php
+}
+
 // Load core functionality
 require_once SNIPPET_AGGREGATOR_PATH . 'core/shared/database.php';
 require_once SNIPPET_AGGREGATOR_PATH . 'core/shared/logger.php';
-require_once SNIPPET_AGGREGATOR_PATH . 'core/updater.php';
-require_once SNIPPET_AGGREGATOR_PATH . 'core/webhook.php';
 require_once SNIPPET_AGGREGATOR_PATH . 'core/admin-interface.php';
 
 // Plugin activation hook
