@@ -1,0 +1,56 @@
+.puzzle-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+    gap: var(--puzzle-gap);
+    width: var(--puzzle-width);
+    height: var(--puzzle-height);
+    position: relative;
+}
+
+.puzzle-grid .tile {
+    width: var(--puzzle-tile-size);
+    height: var(--puzzle-tile-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 1.2s cubic-bezier(0.165, 0.84, 0.44, 1);
+    position: absolute;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.puzzle-grid .tile img {
+    width: var(--puzzle-tile-size);
+    height: var(--puzzle-tile-size);
+    object-fit: contain;
+}
+
+.puzzle-grid .tile:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.puzzle-grid .empty {
+    background: transparent;
+    box-shadow: none;
+    border: none;
+    cursor: default;
+}
+
+.puzzle-grid .empty:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.puzzle-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--puzzle-width);
+    height: var(--puzzle-height);
+    font-size: 18px;
+    color: #666;
+} 
