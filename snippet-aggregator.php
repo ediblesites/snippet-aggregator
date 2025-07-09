@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Snippet Aggregator
  * Description: A self-updating WordPress plugin that manages internal functionality through feature toggles.
- * Version: 1.0.8
+ * Version: 1.0.9
  * Author: Adam Marash
  * GitHub Plugin URI: https://github.com/ediblesites/snippet-aggregator
  * License: GPL v2 or later
@@ -15,17 +15,20 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('SNIPPET_AGGREGATOR_VERSION', '1.0.8');
+define('SNIPPET_AGGREGATOR_VERSION', '1.0.9');
 define('SNIPPET_AGGREGATOR_FILE', __FILE__);
 define('SNIPPET_AGGREGATOR_PATH', plugin_dir_path(__FILE__));
 define('SNIPPET_AGGREGATOR_URL', plugin_dir_url(__FILE__));
 define('SNIPPET_AGGREGATOR_SETTINGS', 'snippet_aggregator_settings');
 
+// Include plugin functions
+require_once ABSPATH . 'wp-admin/includes/plugin.php';
+
 // Check for WP Pusher dependency
 add_action('admin_init', 'snippet_aggregator_check_dependencies');
 
 function snippet_aggregator_check_dependencies() {
-    if (!class_exists('Wppusher\Plugin')) {
+    if (!is_plugin_active('wppusher/wppusher.php')) {
         add_action('admin_notices', 'snippet_aggregator_dependency_notice');
         return;
     }
