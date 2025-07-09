@@ -25,7 +25,7 @@ define('SNIPPET_AGGREGATOR_SETTINGS', 'snippet_aggregator_settings');
 add_action('admin_init', 'snippet_aggregator_check_dependencies');
 
 function snippet_aggregator_check_dependencies() {
-    if (!class_exists('WP_Pusher')) {
+    if (!class_exists('Wppusher\Plugin')) {
         add_action('admin_notices', 'snippet_aggregator_dependency_notice');
         return;
     }
