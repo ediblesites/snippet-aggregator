@@ -10,33 +10,35 @@ if (!defined('ABSPATH')) {
 // Add menu items
 add_action('admin_menu', 'snippet_aggregator_add_menu_items');
 function snippet_aggregator_add_menu_items() {
+    $parent_slug = 'snippet-aggregator';
+
     // Main menu page (shows features by default)
     add_menu_page(
         __('Snippet Aggregator', 'snippet-aggregator'),
         __('Snippet Aggregator', 'snippet-aggregator'),
         'manage_options',
-        'snippet-aggregator-features',
+        $parent_slug,
         'snippet_aggregator_render_features_page',
         'dashicons-admin-plugins'
     );
 
     // Add Features as first submenu to override default
     add_submenu_page(
-        'snippet-aggregator-features',
+        $parent_slug,
         __('Features', 'snippet-aggregator'),
         __('Features', 'snippet-aggregator'),
         'manage_options',
-        'snippet-aggregator-features',
+        $parent_slug,
         'snippet_aggregator_render_features_page'
     );
 
     // Settings page under main menu
     add_submenu_page(
-        'snippet-aggregator-features',
+        $parent_slug,  // Make it a child of Snippet Aggregator
         __('Settings', 'snippet-aggregator'),
         __('Settings', 'snippet-aggregator'),
         'manage_options',
-        'snippet-aggregator-settings',
+        'snippet-aggregator-settings',  // Keep the unique slug for the settings page
         'snippet_aggregator_render_settings_page'
     );
 }
@@ -66,13 +68,6 @@ function snippet_aggregator_register_settings() {
             ]
         );
     }
-}
-
-function snippet_aggregator_sanitize_webhook_secret($value) {
-    if (empty($value)) {
-        $value = wp_generate_password(32, false);
-    }
-    return sanitize_text_field($value);
 }
 
 // Helper function to get available features
@@ -405,108 +400,9 @@ function snippet_aggregator_render_settings_page() {
                     </td>
                 </tr>
             </table>
-            
-            <h2><?php _e('Webhook Configuration', 'snippet-aggregator'); ?></h2>
-            <table class="form-table" role="presentation">
-                <tr>
-                    <th scope="row"><?php _e('Webhook URL', 'snippet-aggregator'); ?></th>
-                    <td>
-                        <?php 
-                        $webhook_url = add_query_arg('action', 'snippet_aggregator_github_webhook', admin_url('admin-ajax.php'));
-                        ?>
-                        <div class="webhook-url-container">
-                            <input type="text"
-                                   class="large-text code"
-                                   value="<?php echo esc_url($webhook_url); ?>"
-                                   readonly
-                                   onclick="this.select()">
-                            <button type="button" class="button copy-button" data-clipboard-text="<?php echo esc_url($webhook_url); ?>">
-                                <?php _e('Copy URL', 'snippet-aggregator'); ?>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row"><?php _e('Webhook Secret', 'snippet-aggregator'); ?></th>
-                    <td>
-                        <?php 
-                        $webhook_secret = get_option('snippet_aggregator_webhook_secret');
-                        if (empty($webhook_secret)) {
-                            $webhook_secret = wp_generate_password(32, false);
-                            update_option('snippet_aggregator_webhook_secret', $webhook_secret);
-                        }
-                        ?>
-                        <div class="webhook-secret-container">
-                            <input type="text"
-                                   class="large-text code"
-                                   name="snippet_aggregator_webhook_secret"
-                                   value="<?php echo esc_attr($webhook_secret); ?>"
-                                   readonly
-                                   onclick="this.select()">
-                            <button type="button" class="button copy-button" data-clipboard-text="<?php echo esc_attr($webhook_secret); ?>">
-                                <?php _e('Copy Secret', 'snippet-aggregator'); ?>
-                            </button>
-                            <button type="button" class="button regenerate-secret">
-                                <?php _e('Regenerate Secret', 'snippet-aggregator'); ?>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            </table>
 
             <?php submit_button(); ?>
         </form>
     </div>
-
-    <style>
-    .webhook-url-container,
-    .webhook-secret-container {
-        display: flex;
-        gap: 8px;
-        align-items: flex-start;
-    }
-    .webhook-url-container input,
-    .webhook-secret-container input {
-        flex: 1;
-    }
-    </style>
-
-    <script>
-    jQuery(document).ready(function($) {
-        // Copy button functionality
-        $('.copy-button').click(function() {
-            const textToCopy = $(this).data('clipboard-text');
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                const $button = $(this);
-                const originalText = $button.text();
-                $button.text('<?php _e('Copied!', 'snippet-aggregator'); ?>');
-                setTimeout(() => {
-                    $button.text(originalText);
-                }, 2000);
-            });
-        });
-
-        // Regenerate secret
-        $('.regenerate-secret').click(function() {
-            if (confirm('<?php _e('Are you sure? You will need to update the webhook in GitHub after regenerating the secret.', 'snippet-aggregator'); ?>')) {
-                const newSecret = generateRandomString(32);
-                $('input[name="snippet_aggregator_webhook_secret"]')
-                    .val(newSecret)
-                    .trigger('change')
-                    .siblings('.copy-button')
-                    .attr('data-clipboard-text', newSecret);
-            }
-        });
-
-        function generateRandomString(length) {
-            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let result = '';
-            for (let i = 0; i < length; i++) {
-                result += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
-            return result;
-        }
-    });
-    </script>
     <?php
 } 
