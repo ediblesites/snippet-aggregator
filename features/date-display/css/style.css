@@ -1,0 +1,26 @@
+.snippet-aggregator-date-display {
+    padding: 10px;
+}
+
+.snippet-aggregator-date-display .date-display-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.snippet-aggregator-date-display .date-display-row:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.snippet-aggregator-date-display .date-label {
+    font-weight: 600;
+    color: #1d2327;
+}
+
+.snippet-aggregator-date-display .date-value {
+    color: #2271b1;
+} 

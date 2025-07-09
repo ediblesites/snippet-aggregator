@@ -1,0 +1,75 @@
+<?php
+/**
+ * Plugin Name: Snippet Aggregator
+ * Description: A self-updating WordPress plugin that manages internal functionality through feature toggles.
+ * Version: 1.0.0
+ * Author: Your Name
+ * License: GPL v2 or later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain: snippet-aggregator
+ */
+
+if (!defined('ABSPATH')) {
+    exit; // Exit if accessed directly
+}
+
+// Define plugin constants
+define('SNIPPET_AGGREGATOR_VERSION', '1.0.0');
+define('SNIPPET_AGGREGATOR_FILE', __FILE__);
+define('SNIPPET_AGGREGATOR_PATH', plugin_dir_path(__FILE__));
+define('SNIPPET_AGGREGATOR_URL', plugin_dir_url(__FILE__));
+
+// Load core functionality
+require_once SNIPPET_AGGREGATOR_PATH . 'core/shared/helpers.php';
+require_once SNIPPET_AGGREGATOR_PATH . 'core/shared/database.php';
+require_once SNIPPET_AGGREGATOR_PATH . 'core/shared/logger.php';
+require_once SNIPPET_AGGREGATOR_PATH . 'core/updater.php';
+require_once SNIPPET_AGGREGATOR_PATH . 'core/webhook.php';  // Add GitHub webhook support
+require_once SNIPPET_AGGREGATOR_PATH . 'core/admin-interface.php';
+
+// Plugin activation hook
+register_activation_hook(__FILE__, 'snippet_aggregator_activate');
+
+function snippet_aggregator_activate() {
+    // Create necessary database tables and options
+    if (!get_option('snippet_aggregator_version')) {
+        update_option('snippet_aggregator_version', SNIPPET_AGGREGATOR_VERSION);
+    }
+}
+
+// Plugin deactivation hook
+register_deactivation_hook(__FILE__, 'snippet_aggregator_deactivate');
+
+function snippet_aggregator_deactivate() {
+    // Cleanup if needed
+}
+
+// Load enabled features
+add_action('plugins_loaded', 'snippet_aggregator_load_features');
+
+function snippet_aggregator_load_features() {
+    $features = snippet_aggregator_get_available_features();
+    
+    foreach ($features as $feature_id => $feature) {
+        if (snippet_aggregator_is_feature_enabled($feature_id)) {
+            // Load feature
+            if (!isset($feature['main_file'])) {
+                Snippet_Aggregator_Logger::error($feature_id, 'No main file specified for feature');
+                continue;
+            }
+
+            $feature_file = SNIPPET_AGGREGATOR_PATH . "features/{$feature_id}/" . $feature['main_file'];
+
+            try {
+                if (file_exists($feature_file)) {
+                    require_once $feature_file;
+                    Snippet_Aggregator_Logger::info($feature_id, sprintf('Feature loaded successfully from %s', $feature_file));
+                } else {
+                    Snippet_Aggregator_Logger::error($feature_id, sprintf('Feature file %s not found', $feature_file));
+                }
+            } catch (Exception $e) {
+                Snippet_Aggregator_Logger::error($feature_id, 'Failed to load feature: ' . $e->getMessage());
+            }
+        }
+    }
+} 

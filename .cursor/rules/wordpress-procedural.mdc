@@ -1,0 +1,6 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Do not create OOP abstractions for existing procedural WordPress functions. However, do create OOP abstractions where it is conducive to code modularity and reuse, especially for new functionality or when it improves maintainability.

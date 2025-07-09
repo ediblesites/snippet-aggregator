@@ -1,0 +1,35 @@
+.webhook-settings {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #ccd0d4;
+    box-shadow: 0 1px 1px rgba(0,0,0,.04);
+    margin-top: 20px;
+}
+
+.webhook-url-container,
+.webhook-secret-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.webhook-url-input,
+.webhook-secret-input {
+    flex: 1;
+    padding: 5px 8px;
+    background: #f6f7f7;
+}
+
+.webhook-instructions {
+    background: #f6f7f7;
+    padding: 15px 20px;
+    border-left: 4px solid #2271b1;
+}
+
+.webhook-instructions ol {
+    margin-left: 20px;
+}
+
+.webhook-instructions li {
+    margin-bottom: 8px;
+} 
