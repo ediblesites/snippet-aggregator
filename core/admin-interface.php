@@ -189,15 +189,15 @@ function snippet_aggregator_render_features_page() {
         .snippet-aggregator-features-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 20px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 15px;
         }
 
         .feature-column {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            padding: 20px;
+            padding: 12px 15px;
             background: #fff;
             border: 1px solid #ccd0d4;
             border-radius: 4px;
@@ -205,11 +205,11 @@ function snippet_aggregator_render_features_page() {
 
         .feature-info {
             flex: 1;
-            padding-right: 20px;
+            padding-right: 15px;
         }
 
         .feature-info h3 {
-            margin: 0 0 8px 0;
+            margin: 0 0 4px 0;
             font-size: 1.1em;
         }
 
@@ -220,14 +220,14 @@ function snippet_aggregator_render_features_page() {
 
         .feature-toggle {
             flex-shrink: 0;
-            padding-top: 4px;
+            padding-top: 2px;
         }
 
         .snippet-aggregator-switch {
             position: relative;
             display: inline-block;
-            width: 60px;
-            height: 34px;
+            width: 46px;
+            height: 24px;
         }
         
         .snippet-aggregator-switch input {
@@ -250,10 +250,10 @@ function snippet_aggregator_render_features_page() {
         .slider:before {
             position: absolute;
             content: "";
-            height: 26px;
-            width: 26px;
-            left: 4px;
-            bottom: 4px;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
             background-color: white;
             transition: .4s;
         }
@@ -267,11 +267,11 @@ function snippet_aggregator_render_features_page() {
         }
         
         input:checked + .slider:before {
-            transform: translateX(26px);
+            transform: translateX(22px);
         }
         
         .slider.round {
-            border-radius: 34px;
+            border-radius: 24px;
         }
         
         .slider.round:before {
@@ -294,7 +294,7 @@ function snippet_aggregator_render_features_page() {
             
             .feature-info {
                 padding-right: 0;
-                padding-bottom: 15px;
+                padding-bottom: 10px;
             }
             
             .feature-toggle {
