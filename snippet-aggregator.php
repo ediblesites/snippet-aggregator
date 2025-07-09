@@ -14,9 +14,6 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-// Load Composer autoloader
-require_once __DIR__ . '/vendor/autoload.php';
-
 // Define plugin constants
 define('SNIPPET_AGGREGATOR_VERSION', '1.0.7');
 define('SNIPPET_AGGREGATOR_FILE', __FILE__);
@@ -27,6 +24,7 @@ define('SNIPPET_AGGREGATOR_SETTINGS', 'snippet_aggregator_settings');
 // Load core functionality
 require_once SNIPPET_AGGREGATOR_PATH . 'core/shared/database.php';
 require_once SNIPPET_AGGREGATOR_PATH . 'core/shared/logger.php';
+require_once SNIPPET_AGGREGATOR_PATH . 'core/updater/DirectUpdater.php';
 require_once SNIPPET_AGGREGATOR_PATH . 'core/updater.php';
 require_once SNIPPET_AGGREGATOR_PATH . 'core/webhook.php';
 require_once SNIPPET_AGGREGATOR_PATH . 'core/admin-interface.php';
