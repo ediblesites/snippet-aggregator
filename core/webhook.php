@@ -19,13 +19,13 @@ function snippet_aggregator_handle_github_webhook() {
     if (!snippet_aggregator_verify_github_signature($payload, $signature)) {
         wp_die('Unauthorized', 401);
     }
-    
+
     // Parse webhook data
     $data = json_decode($payload, true);
     if (!is_array($data)) {
         wp_die('Invalid payload', 400);
     }
-    
+
     // Get the event type
     $event_type = $_SERVER['HTTP_X_GITHUB_EVENT'] ?? '';
     
