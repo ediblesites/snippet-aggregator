@@ -31,8 +31,7 @@ function snippet_aggregator_handle_github_webhook() {
     
     switch ($event_type) {
         case 'ping':
-            // This is the initial webhook test, just return success
-            wp_die('OK', 200);
+            wp_send_json_success(['message' => 'Webhook configured successfully']);
             break;
             
         case 'push':
@@ -45,15 +44,21 @@ function snippet_aggregator_handle_github_webhook() {
             
             // Only process pushes to the default branch
             if ($branch === $default_branch) {
-                snippet_aggregator_check_for_updates();
+                $result = snippet_aggregator_check_for_updates();
+                wp_send_json_success([
+                    'message' => $result ?? 'Push received but update check failed'
+                ]);
             }
             
-            wp_die('OK', 200);
+            wp_send_json_success([
+                'message' => 'Push received but ignored - not default branch'
+            ]);
             break;
             
         default:
-            // Ignore other event types
-            wp_die('Unsupported event type', 200);
+            wp_send_json_success([
+                'message' => 'Event received but ignored - unsupported type'
+            ]);
     }
 }
 

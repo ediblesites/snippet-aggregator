@@ -156,5 +156,7 @@ function snippet_aggregator_check_for_updates() {
     $updater = snippet_aggregator_get_updater();
     if ($updater) {
         $updater->checkForUpdates();
+        return "Plugin update check initiated";
     }
+    return null;
 } 
