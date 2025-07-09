@@ -6,4 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'YahnisElsts\\PluginUpdateChecker\\' => array($vendorDir . '/yahnis-elsts/plugin-update-checker/Puc'),
 );

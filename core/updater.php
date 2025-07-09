@@ -12,40 +12,47 @@ if (!defined('ABSPATH')) {
 // Initialize GitHub updater
 add_action('init', 'snippet_aggregator_init_updater');
 
-function snippet_aggregator_init_updater() {
-    // Get GitHub settings
-    $github_repo = get_option('snippet_aggregator_github_repo');
-    $github_token = get_option('snippet_aggregator_github_token');
+function snippet_aggregator_get_updater() {
+    static $updater = null;
     
-    if (empty($github_repo) || empty($github_token)) {
-        return;
+    if ($updater === null) {
+        // TODO: Future setting in admin
+        // $github_repo = get_option('snippet_aggregator_github_repo');
+        $github_repo = "https://github.com/ediblesites/snippet-aggregator";
+        
+        // TODO: For future private repository support
+        // $github_token = get_option('snippet_aggregator_github_token');
+        
+        if (!empty($github_repo)) {
+            // Initialize updater
+            $updater = PucFactory::buildUpdateChecker(
+                $github_repo,
+                SNIPPET_AGGREGATOR_FILE,
+                'snippet-aggregator'
+            );
+            
+            // TODO: For future private repository support
+            // $updater->setAuthentication($github_token);
+            
+            // TODO: Future setting in admin
+            // $updater->setBranch(get_option('snippet_aggregator_github_branch', 'master'));
+            $updater->setBranch('master');
+        }
     }
     
-    // Include updater library
-    require_once SNIPPET_AGGREGATOR_PATH . 'vendor/plugin-update-checker/plugin-update-checker.php';
-    
-    // Initialize updater
-    $myUpdateChecker = PucFactory::buildUpdateChecker(
-        "https://github.com/{$github_repo}/",
-        SNIPPET_AGGREGATOR_FILE,
-        'snippet-aggregator'
-    );
-    
-    // Set authentication
-    $myUpdateChecker->setAuthentication($github_token);
-    
-    // Set branch
-    $myUpdateChecker->setBranch(get_option('snippet_aggregator_github_branch', 'main'));
-    
-    // Store updater instance for webhook access
-    global $snippet_aggregator_updater;
-    $snippet_aggregator_updater = $myUpdateChecker;
+    return $updater;
+}
+
+function snippet_aggregator_init_updater() {
+    snippet_aggregator_get_updater();
 }
 
 // Register settings
 add_action('admin_init', 'snippet_aggregator_register_updater_settings');
 
 function snippet_aggregator_register_updater_settings() {
+    // TODO: Future setting in admin
+    /*
     // GitHub repository
     register_setting(
         'snippet_aggregator_settings',
@@ -57,6 +64,21 @@ function snippet_aggregator_register_updater_settings() {
         ]
     );
     
+    // GitHub branch
+    register_setting(
+        'snippet_aggregator_settings',
+        'snippet_aggregator_github_branch',
+        [
+            'type' => 'string',
+            'description' => 'GitHub branch to track',
+            'sanitize_callback' => 'snippet_aggregator_sanitize_github_branch',
+            'default' => 'master',
+        ]
+    );
+    */
+
+    // TODO: For future private repository support
+    /*
     // GitHub token
     register_setting(
         'snippet_aggregator_settings',
@@ -67,20 +89,9 @@ function snippet_aggregator_register_updater_settings() {
             'sanitize_callback' => 'snippet_aggregator_sanitize_github_token',
         ]
     );
+    */
     
-    // GitHub branch
-    register_setting(
-        'snippet_aggregator_settings',
-        'snippet_aggregator_github_branch',
-        [
-            'type' => 'string',
-            'description' => 'GitHub branch to track',
-            'sanitize_callback' => 'snippet_aggregator_sanitize_github_branch',
-            'default' => 'main',
-        ]
-    );
-    
-    // Webhook secret
+    // Register webhook secret
     register_setting(
         'snippet_aggregator_settings',
         'snippet_aggregator_webhook_secret',
@@ -92,7 +103,8 @@ function snippet_aggregator_register_updater_settings() {
     );
 }
 
-// Sanitization callbacks
+// TODO: Future setting in admin
+/*
 function snippet_aggregator_sanitize_github_repo($value) {
     $value = sanitize_text_field($value);
     if (!preg_match('/^[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+$/', $value)) {
@@ -106,6 +118,17 @@ function snippet_aggregator_sanitize_github_repo($value) {
     return $value;
 }
 
+function snippet_aggregator_sanitize_github_branch($value) {
+    $value = sanitize_text_field($value);
+    if (empty($value)) {
+        $value = 'master';
+    }
+    return $value;
+}
+*/
+
+// TODO: For future private repository support
+/*
 function snippet_aggregator_sanitize_github_token($value) {
     $value = sanitize_text_field($value);
     if (empty($value)) {
@@ -118,21 +141,14 @@ function snippet_aggregator_sanitize_github_token($value) {
     }
     return $value;
 }
-
-function snippet_aggregator_sanitize_github_branch($value) {
-    $value = sanitize_text_field($value);
-    if (empty($value)) {
-        $value = 'main';
-    }
-    return $value;
-}
+*/
 
 // Add update check action for webhook
 add_action('snippet_aggregator_update_check', 'snippet_aggregator_check_for_updates');
 
 function snippet_aggregator_check_for_updates() {
-    global $snippet_aggregator_updater;
-    if ($snippet_aggregator_updater) {
-        $snippet_aggregator_updater->checkForUpdates();
+    $updater = snippet_aggregator_get_updater();
+    if ($updater) {
+        $updater->checkForUpdates();
     }
 } 

@@ -13,6 +13,9 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+// Load Composer autoloader
+require_once __DIR__ . '/vendor/autoload.php';
+
 // Define plugin constants
 define('SNIPPET_AGGREGATOR_VERSION', '1.0.0');
 define('SNIPPET_AGGREGATOR_FILE', __FILE__);

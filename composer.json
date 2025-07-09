@@ -8,5 +8,8 @@
         "yahnis-elsts/plugin-update-checker": "^5.0"
     },
     "autoload": {
+        "psr-4": {
+            "YahnisElsts\\PluginUpdateChecker\\": "vendor/yahnis-elsts/plugin-update-checker/Puc/"
+        }
     }
 } 
