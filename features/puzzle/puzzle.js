@@ -13,7 +13,8 @@ function getApiUrl() {
     
     const protocol = window.location.protocol;
     const host = window.location.host;
-    return `${protocol}//${host}/wp-json/puzzle/v1/images`;
+    return 'https://orchsoldev.wpenginepowered.com/wp-json/puzzle/v1/images';
+    //`${protocol}//${host}/wp-json/puzzle/v1/images`;
 }
 
 async function loadImages() {

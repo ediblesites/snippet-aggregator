@@ -1,7 +1,7 @@
 <?php
 return [
-    'name' => 'Puzzle',
-    'description' => 'Puzzle feature. Usage: [puzzle width="600" height="600" tile_size="140" gap="10"]',
+    'name' => 'Puzzle (Responsive)',
+    'description' => 'Responsive puzzle feature. Usage: [puzzle width="100%" max_width="600"]',
     'default' => true,
     'main_file' => 'puzzle.php',
 ]; 

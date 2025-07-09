@@ -7,7 +7,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Syntax: [puzzle width="600" height="600" tile_size="140" gap="10"]
+// Syntax: [puzzle width="100%" max_width="600"]
 
 // Register the puzzle shortcode
 add_shortcode('puzzle', 'puzzle_shortcode');
@@ -15,19 +15,17 @@ add_shortcode('puzzle', 'puzzle_shortcode');
 function puzzle_shortcode($atts) {
     // Parse shortcode attributes
     $atts = shortcode_atts(array(
-        'width' => '572',
-        'height' => '572',
-        'tile_size' => '135',
-        'gap' => '8'
+        'width' => '100%',
+        'max_width' => '600px'
     ), $atts, 'puzzle');
     
     // Calculate positions based on tile size and gap
     $pos_values = array();
     for ($row = 0; $row < 4; $row++) {
         for ($col = 0; $col < 4; $col++) {
-            $left = $col * ($atts['tile_size'] + $atts['gap']);
-            $top = $row * ($atts['tile_size'] + $atts['gap']);
-            $pos_values[] = ".pos-{$row}-{$col} { left: {$left}px; top: {$top}px; }";
+            $left = $col === 0 ? '0' : 'calc(' . $col . ' * (var(--puzzle-tile-size) + var(--puzzle-gap)))';
+            $top = $row === 0 ? '0' : 'calc(' . $row . ' * (var(--puzzle-tile-size) + var(--puzzle-gap)))';
+            $pos_values[] = ".pos-{$row}-{$col} { left: {$left}; top: {$top}; }";
         }
     }
     
@@ -56,10 +54,8 @@ function puzzle_shortcode($atts) {
     
     /* Dynamic size variables */
     #puzzleContainer {
-        --puzzle-width: <?php echo $atts['width']; ?>px;
-        --puzzle-height: <?php echo $atts['height']; ?>px;
-        --puzzle-tile-size: <?php echo $atts['tile_size']; ?>px;
-        --puzzle-gap: <?php echo $atts['gap']; ?>px;
+        --puzzle-width: <?php echo esc_attr($atts['width']); ?>;
+        --puzzle-max-width: <?php echo esc_attr($atts['max_width']); ?>;
     }
     </style>
 
