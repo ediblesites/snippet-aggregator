@@ -158,7 +158,7 @@ function snippet_aggregator_render_features_page() {
     // Show features page
     ?>
     <div class="wrap">
-        <h1><?php _e('Features', 'snippet-aggregator'); ?></h1>
+        <h1><?php printf(__('Snippet Aggregator v%s', 'snippet-aggregator'), SNIPPET_AGGREGATOR_VERSION); ?></h1>
         
         <?php settings_errors('snippet_aggregator_messages'); ?>
         
