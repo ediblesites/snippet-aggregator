@@ -14,7 +14,7 @@ add_action('wp_ajax_snippet_aggregator_github_webhook', 'snippet_aggregator_hand
 function snippet_aggregator_handle_github_webhook() {
     // Verify webhook signature
     $payload = file_get_contents('php://input');
-    $signature = $_SERVER['HTTP_X_HUB_SIGNATURE_256'] ?? '';
+    $signature = $_SERVER['HTTP_X_HUB_SIGNATURE_256'] ?? $_SERVER['HTTP_X_HUB_SIGNATURE'] ?? '';
     
     if (!snippet_aggregator_verify_github_signature($payload, $signature)) {
         wp_die('Unauthorized', 401);
