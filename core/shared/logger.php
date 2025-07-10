@@ -15,8 +15,8 @@ if (!defined('ABSPATH')) {
  * @param string $level The log level (info, warning, error)
  */
 function snippet_aggregator_log($feature, $message, $level = 'info') {
-    // Only log if WP_DEBUG or plugin debug mode is enabled
-    if (!WP_DEBUG && !get_option('snippet_aggregator_debug_mode', false)) {
+    // Only log if plugin debug mode is enabled
+    if (!get_option('snippet_aggregator_debug_mode', false)) {
         return;
     }
     
