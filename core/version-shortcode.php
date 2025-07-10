@@ -1,6 +1,8 @@
 <?php
 /**
  * Version shortcode and REST API endpoint functionality
+ * 
+ * Usage: [snippet_aggregator_version] or [snippet_aggregator_version format="v-prefix"] for dynamic version number
  */
 
 if (!defined('ABSPATH')) {
