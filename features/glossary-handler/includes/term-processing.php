@@ -7,16 +7,22 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Define tags where we skip term replacement (both inside tag attributes and wrapped content)
+$IGNORED_TAGS = [
+    'dfn',  // Already contains definitions
+    'a',    // Preserve link text
+    'code', // Code snippets
+    'pre',  // Preformatted text
+    'script', // JavaScript
+    'style',  // CSS
+    'textarea', // Form input
+    'button',   // Button text
+    'input'     // Form elements
+];
+
 // Process content to add dfn tags for glossary terms
 function process_glossary_terms($content) {
-    // At the start of process_glossary_terms(), add:
-    error_log('=== SINGLE FAQ DEBUG ===');
-    error_log('Current URL: ' . $_SERVER['REQUEST_URI']);
-    error_log('Post ID: ' . get_the_ID());
-    error_log('Post type: ' . get_post_type());
-    error_log('Is singular: ' . (is_singular() ? 'yes' : 'no'));
-    error_log('Is included: ' . (is_glossary_processing_included() ? 'yes' : 'no'));
-    error_log('Is excluded: ' . (is_glossary_processing_excluded() ? 'yes' : 'no'));
+    global $IGNORED_TAGS;
     
     // Track which terms we've already processed on this page load
     static $processed_terms = [];
@@ -60,6 +66,9 @@ function process_glossary_terms($content) {
     // Debug: show what content we're processing
     error_log('Content length: ' . strlen($content));
     error_log('Content preview: ' . substr($content, 0, 200));
+
+    // Split content into processable chunks, preserving ignored tags
+    $chunks = split_content_preserve_tags($content, $IGNORED_TAGS);
     
     // Process each term
     foreach ($glossary_terms as $term_data) {
@@ -71,30 +80,102 @@ function process_glossary_terms($content) {
             continue;
         }
         
-        // Debug: check if term exists in content
-        if (stripos($content, $term) !== false) {
-            error_log('Found term "' . $term . '" in content');
-        }
-        
-        // Create pattern for whole word matching (case-insensitive)
-        $pattern = '/\b' . preg_quote($term, '/') . '\b/i';
-        
-        // Replace first occurrence only to avoid over-tagging
-        $replacement_made = preg_replace(
-            $pattern,
-            '<dfn title="' . esc_attr($definition) . '">$0</dfn>',
-            $content,
-            1, // limit to 1 replacement
-            $count
-        );
-        
-        // If replacement was made, mark term as processed and update content
-        if ($count > 0) {
-            $processed_terms[] = $term;
-            $content = $replacement_made;
+        // Process only non-tag chunks
+        foreach ($chunks as &$chunk) {
+            if ($chunk['type'] === 'text') {
+                // Create pattern for whole word matching (case-insensitive)
+                $pattern = '/\b' . preg_quote($term, '/') . '\b/i';
+                
+                // Replace first occurrence only in this chunk
+                $replacement_made = preg_replace(
+                    $pattern,
+                    '<dfn title="' . esc_attr($definition) . '">$0</dfn>',
+                    $chunk['content'],
+                    1, // limit to 1 replacement
+                    $count
+                );
+                
+                // If replacement was made, mark term as processed and update chunk
+                if ($count > 0) {
+                    $processed_terms[] = $term;
+                    $chunk['content'] = $replacement_made;
+                    break; // Stop after first replacement across all chunks
+                }
+            }
         }
     }
     
-    return $content;
+    // Reconstruct content from chunks
+    $processed_content = '';
+    foreach ($chunks as $chunk) {
+        $processed_content .= $chunk['content'];
+    }
+    
+    return $processed_content;
 }
+
+/**
+ * Split content into chunks of text and ignored tags
+ * 
+ * @param string $content The content to split
+ * @param array $ignored_tags Array of tag names to ignore
+ * @return array Array of chunks with 'type' (text|tag) and 'content'
+ */
+function split_content_preserve_tags($content, $ignored_tags) {
+    $chunks = [];
+    $current_pos = 0;
+    $content_length = strlen($content);
+    
+    // Create pattern for matching any ignored tag
+    $tags_pattern = implode('|', array_map('preg_quote', $ignored_tags));
+    $tag_regex = "/<(?:$tags_pattern)(?:\s[^>]*)?>/i";
+    
+    while ($current_pos < $content_length) {
+        // Find next ignored tag
+        if (preg_match($tag_regex, $content, $tag_match, PREG_OFFSET_CAPTURE, $current_pos)) {
+            $tag_start = $tag_match[0][1];
+            $tag_name = strtolower(trim($tag_match[0][0], "<> "));
+            $tag_name = preg_replace('/\s.*$/', '', $tag_name); // Remove attributes
+            
+            // Add text chunk before tag if exists
+            if ($tag_start > $current_pos) {
+                $chunks[] = [
+                    'type' => 'text',
+                    'content' => substr($content, $current_pos, $tag_start - $current_pos)
+                ];
+            }
+            
+            // Find closing tag
+            $closing_tag = "</$tag_name>";
+            $tag_end = stripos($content, $closing_tag, $tag_start);
+            if ($tag_end === false) {
+                // No closing tag found, treat rest as text
+                $chunks[] = [
+                    'type' => 'text',
+                    'content' => substr($content, $current_pos)
+                ];
+                break;
+            }
+            
+            // Add tag chunk (including content between tags)
+            $tag_length = $tag_end + strlen($closing_tag) - $tag_start;
+            $chunks[] = [
+                'type' => 'tag',
+                'content' => substr($content, $tag_start, $tag_length)
+            ];
+            
+            $current_pos = $tag_start + $tag_length;
+        } else {
+            // No more tags, add remaining content as text
+            $chunks[] = [
+                'type' => 'text',
+                'content' => substr($content, $current_pos)
+            ];
+            break;
+        }
+    }
+    
+    return $chunks;
+}
+
 add_filter('the_content', 'process_glossary_terms', 20); 
