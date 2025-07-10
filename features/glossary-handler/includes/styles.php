@@ -43,7 +43,7 @@ function glossary_dfn_styles() {
             font-style: normal;
             text-decoration-line: underline;
             text-decoration-style: dashed;
-            text-decoration-color: var(--wp--preset--color--primary-accent);
+            text-decoration-color: var(--wp--preset--color--primary);
             cursor: help;
         }
     </style>
