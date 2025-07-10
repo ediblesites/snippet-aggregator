@@ -45,4 +45,3 @@ function maybe_add_archive_edit_link($content) {
 
 // Add to both content and excerpt on archive pages
 add_filter('the_content', 'maybe_add_archive_edit_link');
-add_filter('the_excerpt', 'maybe_add_archive_edit_link'); 
