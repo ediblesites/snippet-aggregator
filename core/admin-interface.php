@@ -10,36 +10,13 @@ if (!defined('ABSPATH')) {
 // Add menu items
 add_action('admin_menu', 'snippet_aggregator_add_menu_items');
 function snippet_aggregator_add_menu_items() {
-    $parent_slug = 'snippet-aggregator';
-
-    // Main menu page (shows features by default)
-    add_menu_page(
+    // Add under Settings menu
+    add_options_page(
         __('Snippet Aggregator', 'snippet-aggregator'),
         __('Snippet Aggregator', 'snippet-aggregator'),
         'manage_options',
-        $parent_slug,
-        'snippet_aggregator_render_features_page',
-        'dashicons-admin-plugins'
-    );
-
-    // Add Features as first submenu to override default
-    add_submenu_page(
-        $parent_slug,
-        __('Features', 'snippet-aggregator'),
-        __('Features', 'snippet-aggregator'),
-        'manage_options',
-        $parent_slug,
-        'snippet_aggregator_render_features_page'
-    );
-
-    // Settings page under main menu
-    add_submenu_page(
-        $parent_slug,  // Make it a child of Snippet Aggregator
-        __('Settings', 'snippet-aggregator'),
-        __('Settings', 'snippet-aggregator'),
-        'manage_options',
-        'snippet-aggregator-settings',  // Keep the unique slug for the settings page
-        'snippet_aggregator_render_settings_page'
+        'snippet-aggregator',
+        'snippet_aggregator_render_admin_page'
     );
 }
 
@@ -146,279 +123,271 @@ function snippet_aggregator_ajax_toggle_feature() {
     ]);
 }
 
-// Render features page
-function snippet_aggregator_render_features_page() {
+// Main render function for admin page
+function snippet_aggregator_render_admin_page() {
     if (!current_user_can('manage_options')) {
         return;
     }
 
-    // Get features
-    $features = snippet_aggregator_get_available_features();
-    
-    // Show features page
+    // Get current tab
+    $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'features';
     ?>
     <div class="wrap">
         <h1><?php printf(__('Snippet Aggregator v%s', 'snippet-aggregator'), SNIPPET_AGGREGATOR_VERSION); ?></h1>
-        
+
+        <nav class="nav-tab-wrapper">
+            <a href="?page=snippet-aggregator&tab=features" class="nav-tab <?php echo $current_tab === 'features' ? 'nav-tab-active' : ''; ?>">
+                <?php _e('Features', 'snippet-aggregator'); ?>
+            </a>
+            <a href="?page=snippet-aggregator&tab=settings" class="nav-tab <?php echo $current_tab === 'settings' ? 'nav-tab-active' : ''; ?>">
+                <?php _e('Settings', 'snippet-aggregator'); ?>
+            </a>
+        </nav>
+
         <?php settings_errors('snippet_aggregator_messages'); ?>
-        
-        <div id="snippet-aggregator-features">
-            <h2><?php _e('Available Features', 'snippet-aggregator'); ?></h2>
-            <div class="snippet-aggregator-features-grid">
-                <?php foreach ($features as $feature_id => $feature): ?>
-                    <div class="feature-column">
-                        <div class="feature-info">
-                            <h3><?php echo esc_html($feature['name']); ?></h3>
-                            <p class="description"><?php echo esc_html($feature['description']); ?></p>
-                        </div>
-                        <div class="feature-toggle">
-                            <label class="snippet-aggregator-switch">
-                                <input type="checkbox"
-                                       class="snippet-aggregator-feature-toggle"
-                                       data-feature="<?php echo esc_attr($feature_id); ?>"
-                                       <?php checked(get_option("snippet_aggregator_feature_{$feature_id}", false)); ?>>
-                                <span class="slider round"></span>
-                            </label>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            </div>
+
+        <div class="tab-content">
+            <?php
+            if ($current_tab === 'features') {
+                snippet_aggregator_render_features_tab();
+            } else {
+                snippet_aggregator_render_settings_tab();
+            }
+            ?>
         </div>
-
-        <style>
-        .snippet-aggregator-features-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* Changed to 2 columns */
-            gap: 20px; /* Increased gap for better separation */
-            margin-top: 15px;
-        }
-
-        .feature-column {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            padding: 16px; /* Slightly more padding */
-            background: #fff;
-            border: 1px solid #ccd0d4;
-            border-radius: 4px;
-            height: 100%; /* Ensure equal height */
-            box-sizing: border-box;
-        }
-
-        .feature-info {
-            flex: 1;
-            padding-right: 20px; /* More space before toggle */
-            min-width: 0; /* Allow text to wrap */
-        }
-
-        .feature-info h3 {
-            margin: 0 0 8px 0;
-            font-size: 1.1em;
-            line-height: 1.3;
-        }
-
-        .feature-info .description {
-            margin: 0;
-            color: #646970;
-            line-height: 1.5;
-        }
-
-        .feature-toggle {
-            flex-shrink: 0;
-            padding-top: 2px;
-        }
-
-        .snippet-aggregator-switch {
-            position: relative;
-            display: inline-block;
-            width: 46px;
-            height: 24px;
-        }
-        
-        .snippet-aggregator-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-        }
-        
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 18px;
-            width: 18px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-        }
-        
-        input:checked + .slider {
-            background-color: #2271b1;
-        }
-        
-        input:focus + .slider {
-            box-shadow: 0 0 1px #2271b1;
-        }
-        
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
-        
-        .slider.round {
-            border-radius: 24px;
-        }
-        
-        .slider.round:before {
-            border-radius: 50%;
-        }
-
-        .snippet-aggregator-switch.disabled {
-            opacity: 0.7;
-            cursor: not-allowed;
-        }
-
-        .snippet-aggregator-switch.disabled .slider {
-            cursor: not-allowed;
-        }
-
-        @media screen and (max-width: 1200px) {
-            .snippet-aggregator-features-grid {
-                grid-template-columns: 1fr; /* Single column on smaller screens */
-            }
-        }
-
-        @media screen and (max-width: 782px) {
-            .feature-column {
-                flex-direction: column;
-            }
-            
-            .feature-info {
-                padding-right: 0;
-                padding-bottom: 10px;
-            }
-            
-            .feature-toggle {
-                align-self: flex-start;
-            }
-        }
-        </style>
-
-        <script>
-        jQuery(document).ready(function($) {
-            // Reusable copy button functionality
-            function initCopyButton($button) {
-                $button.click(function() {
-                    const textToCopy = $(this).data('clipboard-text');
-                    navigator.clipboard.writeText(textToCopy).then(() => {
-                        const $button = $(this);
-                        const originalText = $button.text();
-                        $button.text('<?php _e('Copied!', 'snippet-aggregator'); ?>');
-                        setTimeout(() => {
-                            $button.text(originalText);
-                        }, 2000);
-                    });
-                });
-            }
-
-            // Initialize all copy buttons
-            $('.copy-button').each(function() {
-                initCopyButton($(this));
-            });
-
-            // Feature toggle functionality
-            $('.snippet-aggregator-feature-toggle').on('change', function() {
-                const $switch = $(this).closest('.snippet-aggregator-switch');
-                const feature = $(this).data('feature');
-                const enabled = $(this).prop('checked');
-                
-                // Disable switch while processing
-                $switch.addClass('disabled');
-                $(this).prop('disabled', true);
-                
-                $.ajax({
-                    url: ajaxurl,
-                    type: 'POST',
-                    data: {
-                        action: 'snippet_aggregator_toggle_feature',
-                        feature_id: feature,
-                        enabled: enabled ? 1 : 0,
-                        nonce: '<?php echo wp_create_nonce('snippet_aggregator_toggle_feature'); ?>'
-                    },
-                    success: function(response) {
-                        if (!response.success) {
-                            // Only revert on error
-                            $(this).prop('checked', !enabled);
-                        }
-                    },
-                    error: function() {
-                        // Revert the toggle on error
-                        $(this).prop('checked', !enabled);
-                    },
-                    complete: function() {
-                        // Re-enable switch
-                        $switch.removeClass('disabled');
-                        $(this).prop('disabled', false);
-                    }
-                });
-            });
-        });
-        </script>
     </div>
     <?php
 }
 
-// Render settings page
-function snippet_aggregator_render_settings_page() {
-    if (!current_user_can('manage_options')) {
-        return;
+// Render features tab content
+function snippet_aggregator_render_features_tab() {
+    $features = snippet_aggregator_get_available_features();
+    ?>
+    <div id="snippet-aggregator-features">
+        <div class="snippet-aggregator-features-grid">
+            <?php foreach ($features as $feature_id => $feature): ?>
+                <div class="feature-column">
+                    <div class="feature-info">
+                        <h3><?php echo esc_html($feature['name']); ?></h3>
+                        <p class="description"><?php echo esc_html($feature['description']); ?></p>
+                    </div>
+                    <div class="feature-toggle">
+                        <label class="snippet-aggregator-switch">
+                            <input type="checkbox"
+                                   class="snippet-aggregator-feature-toggle"
+                                   data-feature="<?php echo esc_attr($feature_id); ?>"
+                                   <?php checked(get_option("snippet_aggregator_feature_{$feature_id}", false)); ?>>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <style>
+    .snippet-aggregator-features-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr); /* Changed to 2 columns */
+        gap: 20px; /* Increased gap for better separation */
+        margin-top: 15px;
     }
 
-    ?>
-    <div class="wrap">
-        <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
-        
-        <div class="shortcode-info" style="margin: 10px 0 20px; padding: 12px 15px; background: #fff; border: 1px solid #c3c4c7; border-left: 4px solid #2271b1; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
-            <code style="font-size: 13px; background: #f0f0f1; padding: 3px 5px; border-radius: 3px;">[snippet_aggregator_version format="v-prefix"]</code>
-            <span style="color: #646970; margin-left: 8px;">Use this shortcode to display the current plugin version </span>
-        </div>
-        
-        <?php settings_errors('snippet_aggregator_messages'); ?>
+    .feature-column {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 16px; /* Slightly more padding */
+        background: #fff;
+        border: 1px solid #ccd0d4;
+        border-radius: 4px;
+        height: 100%; /* Ensure equal height */
+        box-sizing: border-box;
+    }
 
-        <form action="options.php" method="post">
-            <?php settings_fields('snippet_aggregator_settings'); ?>
+    .feature-info {
+        flex: 1;
+        padding-right: 20px; /* More space before toggle */
+        min-width: 0; /* Allow text to wrap */
+    }
+
+    .feature-info h3 {
+        margin: 0 0 8px 0;
+        font-size: 1.1em;
+        line-height: 1.3;
+    }
+
+    .feature-info .description {
+        margin: 0;
+        color: #646970;
+        line-height: 1.5;
+    }
+
+    .feature-toggle {
+        flex-shrink: 0;
+        padding-top: 2px;
+    }
+
+    .snippet-aggregator-switch {
+        position: relative;
+        display: inline-block;
+        width: 46px;
+        height: 24px;
+    }
+    
+    .snippet-aggregator-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+    }
+    
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+    }
+    
+    input:checked + .slider {
+        background-color: #2271b1;
+    }
+    
+    input:focus + .slider {
+        box-shadow: 0 0 1px #2271b1;
+    }
+    
+    input:checked + .slider:before {
+        transform: translateX(22px);
+    }
+    
+    .slider.round {
+        border-radius: 24px;
+    }
+    
+    .slider.round:before {
+        border-radius: 50%;
+    }
+
+    .snippet-aggregator-switch.disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .snippet-aggregator-switch.disabled .slider {
+        cursor: not-allowed;
+    }
+
+    @media screen and (max-width: 1200px) {
+        .snippet-aggregator-features-grid {
+            grid-template-columns: 1fr; /* Single column on smaller screens */
+        }
+    }
+
+    @media screen and (max-width: 782px) {
+        .feature-column {
+            flex-direction: column;
+        }
+        
+        .feature-info {
+            padding-right: 0;
+            padding-bottom: 10px;
+        }
+        
+        .feature-toggle {
+            align-self: flex-start;
+        }
+    }
+    </style>
+
+    <script>
+    jQuery(document).ready(function($) {
+        // Feature toggle functionality
+        $('.snippet-aggregator-feature-toggle').on('change', function() {
+            const $switch = $(this).closest('.snippet-aggregator-switch');
+            const feature = $(this).data('feature');
+            const enabled = $(this).prop('checked');
             
-            <h2><?php _e('Debug Settings', 'snippet-aggregator'); ?></h2>
-            <table class="form-table" role="presentation">
-                <tr>
-                    <th scope="row"><?php _e('Debug Mode', 'snippet-aggregator'); ?></th>
-                    <td>
-                        <label>
-                            <input type="checkbox" 
-                                   name="snippet_aggregator_debug_mode" 
-                                   value="1"
-                                   <?php checked(get_option('snippet_aggregator_debug_mode', false)); ?>>
-                            <?php _e('Enable detailed logging', 'snippet-aggregator'); ?>
-                        </label>
-                        <p class="description">
-                            <?php _e('When enabled, detailed debug information will be written to the WordPress error log. Works in conjunction with WP_DEBUG.', 'snippet-aggregator'); ?>
-                        </p>
-                    </td>
-                </tr>
-            </table>
+            // Disable switch while processing
+            $switch.addClass('disabled');
+            $(this).prop('disabled', true);
+            
+            $.ajax({
+                url: ajaxurl,
+                type: 'POST',
+                data: {
+                    action: 'snippet_aggregator_toggle_feature',
+                    feature_id: feature,
+                    enabled: enabled ? 1 : 0,
+                    nonce: '<?php echo wp_create_nonce('snippet_aggregator_toggle_feature'); ?>'
+                },
+                success: function(response) {
+                    if (!response.success) {
+                        // Only revert on error
+                        $(this).prop('checked', !enabled);
+                    }
+                },
+                error: function() {
+                    // Revert the toggle on error
+                    $(this).prop('checked', !enabled);
+                },
+                complete: function() {
+                    // Re-enable switch
+                    $switch.removeClass('disabled');
+                    $(this).prop('disabled', false);
+                }
+            });
+        });
+    });
+    </script>
+    <?php
+}
 
-            <?php submit_button(); ?>
-        </form>
+// Render settings tab content
+function snippet_aggregator_render_settings_tab() {
+    ?>
+    <div class="shortcode-info" style="margin: 10px 0 20px; padding: 12px 15px; background: #fff; border: 1px solid #c3c4c7; border-left: 4px solid #2271b1; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+        <code style="font-size: 13px; background: #f0f0f1; padding: 3px 5px; border-radius: 3px;">[snippet_aggregator_version format="v-prefix"]</code>
+        <span style="color: #646970; margin-left: 8px;">Use this shortcode to display the current plugin version </span>
     </div>
+
+    <form action="options.php" method="post">
+        <?php settings_fields('snippet_aggregator_settings'); ?>
+        
+        <h2><?php _e('Debug Settings', 'snippet-aggregator'); ?></h2>
+        <table class="form-table" role="presentation">
+            <tr>
+                <th scope="row"><?php _e('Debug Mode', 'snippet-aggregator'); ?></th>
+                <td>
+                    <label>
+                        <input type="checkbox" 
+                               name="snippet_aggregator_debug_mode" 
+                               value="1"
+                               <?php checked(get_option('snippet_aggregator_debug_mode', false)); ?>>
+                        <?php _e('Enable detailed logging', 'snippet-aggregator'); ?>
+                    </label>
+                    <p class="description">
+                        <?php _e('When enabled, detailed debug information will be written to the WordPress error log.', 'snippet-aggregator'); ?>
+                    </p>
+                </td>
+            </tr>
+        </table>
+
+        <?php submit_button(); ?>
+    </form>
     <?php
 } 
