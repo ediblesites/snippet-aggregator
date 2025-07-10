@@ -7,23 +7,25 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Define tags where we skip term replacement (both inside tag attributes and wrapped content)
-$IGNORED_TAGS = [
-    'dfn',  // Already contains definitions
-    'a',    // Preserve link text
-    'code', // Code snippets
-    'pre',  // Preformatted text
-    'script', // JavaScript
-    'style',  // CSS
-    'textarea', // Form input
-    'button',   // Button text
-    'input'     // Form elements
-];
+/**
+ * Get the list of HTML tags where term replacement should be skipped
+ */
+function get_ignored_tags() {
+    return [
+        'dfn',  // Already contains definitions
+        'a',    // Preserve link text
+        'code', // Code snippets
+        'pre',  // Preformatted text
+        'script', // JavaScript
+        'style',  // CSS
+        'textarea', // Form input
+        'button',   // Button text
+        'input'     // Form elements
+    ];
+}
 
 // Process content to add dfn tags for glossary terms
 function process_glossary_terms($content) {
-    global $IGNORED_TAGS;
-    
     // Track which terms we've already processed on this page load
     static $processed_terms = [];
     
@@ -53,22 +55,12 @@ function process_glossary_terms($content) {
     // Get glossary terms
     $glossary_terms = get_glossary_terms();
     
-    // Debug glossary terms
-    error_log('Glossary terms count: ' . count($glossary_terms));
-    if (!empty($glossary_terms)) {
-        error_log('First few terms: ' . print_r(array_slice($glossary_terms, 0, 3), true));
-    }
-    
     if (empty($glossary_terms)) {
         return $content;
     }
-    
-    // Debug: show what content we're processing
-    error_log('Content length: ' . strlen($content));
-    error_log('Content preview: ' . substr($content, 0, 200));
 
     // Split content into processable chunks, preserving ignored tags
-    $chunks = split_content_preserve_tags($content, $IGNORED_TAGS);
+    $chunks = split_content_preserve_tags($content, get_ignored_tags());
     
     // Process each term
     foreach ($glossary_terms as $term_data) {
