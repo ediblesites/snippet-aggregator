@@ -388,6 +388,11 @@ function snippet_aggregator_render_settings_page() {
     <div class="wrap">
         <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
         
+        <div class="shortcode-info" style="margin: 10px 0 20px; padding: 12px 15px; background: #fff; border: 1px solid #c3c4c7; border-left: 4px solid #2271b1; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
+            <code style="font-size: 13px; background: #f0f0f1; padding: 3px 5px; border-radius: 3px;">[snippet_aggregator_version format="v-prefix"]</code>
+            <span style="color: #646970; margin-left: 8px;">Use this shortcode to display the current plugin version </span>
+        </div>
+        
         <?php settings_errors('snippet_aggregator_messages'); ?>
 
         <form action="options.php" method="post">
