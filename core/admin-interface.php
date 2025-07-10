@@ -188,8 +188,8 @@ function snippet_aggregator_render_features_page() {
         <style>
         .snippet-aggregator-features-grid {
             display: grid;
-            grid-template-columns: 1fr;
-            gap: 12px;
+            grid-template-columns: repeat(2, 1fr); /* Changed to 2 columns */
+            gap: 20px; /* Increased gap for better separation */
             margin-top: 15px;
         }
 
@@ -197,25 +197,30 @@ function snippet_aggregator_render_features_page() {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            padding: 12px 15px;
+            padding: 16px; /* Slightly more padding */
             background: #fff;
             border: 1px solid #ccd0d4;
             border-radius: 4px;
+            height: 100%; /* Ensure equal height */
+            box-sizing: border-box;
         }
 
         .feature-info {
             flex: 1;
-            padding-right: 15px;
+            padding-right: 20px; /* More space before toggle */
+            min-width: 0; /* Allow text to wrap */
         }
 
         .feature-info h3 {
-            margin: 0 0 4px 0;
+            margin: 0 0 8px 0;
             font-size: 1.1em;
+            line-height: 1.3;
         }
 
         .feature-info .description {
             margin: 0;
             color: #646970;
+            line-height: 1.5;
         }
 
         .feature-toggle {
@@ -285,6 +290,12 @@ function snippet_aggregator_render_features_page() {
 
         .snippet-aggregator-switch.disabled .slider {
             cursor: not-allowed;
+        }
+
+        @media screen and (max-width: 1200px) {
+            .snippet-aggregator-features-grid {
+                grid-template-columns: 1fr; /* Single column on smaller screens */
+            }
         }
 
         @media screen and (max-width: 782px) {
