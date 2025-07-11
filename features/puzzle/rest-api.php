@@ -23,12 +23,20 @@ add_action('rest_api_init', function () {
  * @return bool True if image exists and is accessible
  */
 function verify_image_exists($url) {
-    // Convert URL to local file path
-    $upload_dir = wp_upload_dir();
-    $file_path = str_replace($upload_dir['baseurl'], $upload_dir['basedir'], $url);
+    // Get attachment ID from URL
+    $attachment_id = attachment_url_to_postid($url);
+    if (!$attachment_id) {
+        return false;
+    }
     
-    // Check if file exists and is an image
-    return file_exists($file_path) && getimagesize($file_path) !== false;
+    // Get file path from attachment ID
+    $file_path = get_attached_file($attachment_id);
+    if (!$file_path) {
+        return false;
+    }
+    
+    // Check if file exists
+    return file_exists($file_path);
 }
 
 function get_puzzle_images($request) {
