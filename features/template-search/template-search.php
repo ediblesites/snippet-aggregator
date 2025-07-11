@@ -9,13 +9,6 @@ if (!defined('ABSPATH')) {
 
 // Template-based search results using Google Custom Search API with standard pagination
 function template_based_search_results($posts, $query) {
-	// Add debugging
-//     error_log("Search debug - URL: " . $_SERVER['REQUEST_URI']);
-//     error_log("Search debug - is_search: " . ($query->is_search() ? 'true' : 'false'));
-//     error_log("Search debug - is_main_query: " . ($query->is_main_query() ? 'true' : 'false'));
-//     error_log("Search debug - paged: " . get_query_var('paged'));
-//     error_log("Search debug - s: " . get_query_var('s'));
-// 	error_log("==============================================================================");
 	
     if (!$query->is_search() || !$query->is_main_query()) {
         return $posts;
