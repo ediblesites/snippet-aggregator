@@ -17,6 +17,10 @@ add_action('rest_api_init', function () {
 });
 
 function get_puzzle_images($request) {
+    // Get total count of all integration posts
+    $total_count = wp_count_posts('integration');
+    $total_integrations = $total_count->publish;
+    
     // Get images from integrations custom post type
     $args = array(
         'post_type' => 'integration',
@@ -81,6 +85,7 @@ function get_puzzle_images($request) {
     
     return rest_ensure_response(array(
         'success' => true,
-        'images' => $image_urls
+        'images' => $image_urls,
+        'total_integrations' => (int)$total_integrations // Add total count to response
     ));
 } 
