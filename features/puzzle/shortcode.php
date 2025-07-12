@@ -66,3 +66,18 @@ function puzzle_shortcode($atts) {
     <?php
     return ob_get_clean();
 } 
+
+// Register the integration count shortcode
+add_shortcode('integration_count', 'integration_count_shortcode');
+
+function integration_count_shortcode() {
+    // Get total count of all integration posts
+    $total_count = wp_count_posts('integration');
+    $total_integrations = (int)$total_count->publish;
+    
+    // Round down to nearest tens
+    $rounded_count = floor($total_integrations / 10) * 10;
+    
+    // Return the count with '+' suffix
+    return $rounded_count . '+';
+} 
