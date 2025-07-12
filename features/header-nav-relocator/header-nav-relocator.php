@@ -22,10 +22,10 @@ add_action('wp_footer', function() {
         return;
     }
 
-    // Load content into DOM
-    $dom = new DOMDocument();
+    // Load content into DOM with proper encoding
+    $dom = new DOMDocument('1.0', 'UTF-8');
     libxml_use_internal_errors(true);
-    $dom->loadHTML('<!DOCTYPE html><html><body>' . $content . '</body></html>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+    $dom->loadHTML('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>' . mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8') . '</body></html>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
     libxml_clear_errors();
 
     // Find the logo-and-navs div inside header
@@ -47,10 +47,10 @@ add_action('wp_footer', function() {
     $header = $xpath->query("//header")->item(0);
     
     if ($header) {
-        // Create a temporary DOM to parse the nav content
-        $temp_dom = new DOMDocument();
+        // Create a temporary DOM to parse the nav content with proper encoding
+        $temp_dom = new DOMDocument('1.0', 'UTF-8');
         libxml_use_internal_errors(true);
-        $temp_dom->loadHTML('<!DOCTYPE html><html><body>' . $nav_content . '</body></html>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        $temp_dom->loadHTML('<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>' . mb_convert_encoding($nav_content, 'HTML-ENTITIES', 'UTF-8') . '</body></html>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
         libxml_clear_errors();
         
         // Import the nav element into the main DOM
