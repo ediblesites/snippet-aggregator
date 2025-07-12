@@ -24,7 +24,6 @@ async function loadImages() {
         
         if (data.success && data.images && data.images.length >= 15) {
             tileImages = data.images;
-            console.log(`Loaded ${tileImages.length} images`);
             initializePuzzle();
         } else {
             throw new Error('Invalid API response or insufficient images');
