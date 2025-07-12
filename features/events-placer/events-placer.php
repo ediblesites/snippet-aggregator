@@ -10,8 +10,25 @@ if (!defined('ABSPATH')) {
 // Include status manager functionality
 require_once __DIR__ . '/includes/status-manager.php';
 
-// Register shortcode for event announcement
+// Register shortcodes
 add_shortcode('event_announcement', 'render_event_announcement');
+add_shortcode('event_slug', 'render_event_slug');
+
+/**
+ * Returns event URL path without protocol for FSE button compatibility
+ * FSE button setup requires URLs without the protocol prefix
+ */
+function render_event_slug() {
+    $upcoming_event = get_next_upcoming_event();
+    
+    if (!$upcoming_event) {
+        return '';
+    }
+    
+    $event_link = get_permalink($upcoming_event->ID);
+    // Strip protocol to work with FSE button limitations
+    return preg_replace('(^https?://)', '', $event_link);
+}
 
 function render_event_announcement() {
     // Get the next upcoming event
