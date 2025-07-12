@@ -25,7 +25,7 @@ function add_archive_edit_link() {
         return;
     }
     
-    echo '<a href="' . esc_url($edit_url) . '" class="edit-link" style="margin-left: 8px; text-decoration: none; display: inline;">🖉</a>';
+    echo '<a href="' . esc_url($edit_url) . '" class="edit-link" style="margin-left: 8px; text-decoration: none; display: inline;">✎</a>';
 }
 
 /**
