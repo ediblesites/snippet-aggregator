@@ -342,13 +342,14 @@ function snippet_aggregator_render_features_tab() {
     jQuery(document).ready(function($) {
         // Feature toggle functionality
         $('.snippet-aggregator-feature-toggle').on('change', function() {
-            const $switch = $(this).closest('.snippet-aggregator-switch');
-            const feature = $(this).data('feature');
-            const enabled = $(this).prop('checked');
+            const $toggle = $(this);
+            const $switch = $toggle.closest('.snippet-aggregator-switch');
+            const feature = $toggle.data('feature');
+            const enabled = $toggle.prop('checked');
             
             // Disable switch while processing
             $switch.addClass('disabled');
-            $(this).prop('disabled', true);
+            $toggle.prop('disabled', true);
             
             $.ajax({
                 url: ajaxurl,
@@ -361,18 +362,20 @@ function snippet_aggregator_render_features_tab() {
                 },
                 success: function(response) {
                     if (!response.success) {
-                        // Only revert on error
-                        $(this).prop('checked', !enabled);
+                        // Revert on error and show message
+                        $toggle.prop('checked', !enabled);
+                        alert('Failed to update feature status. Please try again.');
                     }
                 },
-                error: function() {
-                    // Revert the toggle on error
-                    $(this).prop('checked', !enabled);
+                error: function(xhr, status, error) {
+                    // Revert the toggle on error and show message
+                    $toggle.prop('checked', !enabled);
+                    alert('Error updating feature status: ' + error);
                 },
                 complete: function() {
                     // Re-enable switch
                     $switch.removeClass('disabled');
-                    $(this).prop('disabled', false);
+                    $toggle.prop('disabled', false);
                 }
             });
         });
