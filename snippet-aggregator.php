@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Snippet Aggregator
  * Description: A self-updating WordPress plugin that manages internal functionality through feature toggles.
- * Version: 1.0.39    
+ * Version: 1.0.40    
  * Author: Adam Marash
  * GitHub Plugin URI: https://github.com/ediblesites/snippet-aggregator
  * License: GPL v2 or later
@@ -15,7 +15,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('SNIPPET_AGGREGATOR_VERSION', '1.0.39');
+define('SNIPPET_AGGREGATOR_VERSION', '1.0.40');
 define('SNIPPET_AGGREGATOR_FILE', __FILE__);
 define('SNIPPET_AGGREGATOR_PATH', plugin_dir_path(__FILE__));
 define('SNIPPET_AGGREGATOR_URL', plugin_dir_url(__FILE__));
@@ -69,9 +69,22 @@ add_action('plugins_loaded', 'snippet_aggregator_load_features');
 
 function snippet_aggregator_load_features() {
     $features = snippet_aggregator_get_available_features();
+    $is_admin = is_admin();
     
     foreach ($features as $feature_id => $feature) {
         if (get_option("snippet_aggregator_feature_{$feature_id}", false)) {
+            // Check context restrictions
+            if (isset($feature['context'])) {
+                if ($feature['context'] === 'frontend' && $is_admin) {
+                    snippet_aggregator_log($feature_id, 'Feature skipped - frontend only', 'info');
+                    continue;
+                }
+                if ($feature['context'] === 'admin' && !$is_admin) {
+                    snippet_aggregator_log($feature_id, 'Feature skipped - admin only', 'info');
+                    continue;
+                }
+            }
+
             // Load feature
             if (!isset($feature['main_file'])) {
                 snippet_aggregator_log($feature_id, 'No main file specified for feature', 'error');

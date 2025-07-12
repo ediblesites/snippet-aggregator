@@ -170,6 +170,11 @@ function snippet_aggregator_render_features_tab() {
                     <div class="feature-info">
                         <h3><?php echo esc_html($feature['name']); ?></h3>
                         <p class="description"><?php echo esc_html($feature['description']); ?></p>
+                        <?php if (isset($feature['context'])): ?>
+                            <span class="context-badge <?php echo esc_attr($feature['context']); ?>">
+                                <?php echo esc_html(ucfirst($feature['context'])); ?>
+                            </span>
+                        <?php endif; ?>
                     </div>
                     <div class="feature-toggle">
                         <label class="snippet-aggregator-switch">
@@ -290,6 +295,25 @@ function snippet_aggregator_render_features_tab() {
 
     .snippet-aggregator-switch.disabled .slider {
         cursor: not-allowed;
+    }
+
+    .context-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+        font-weight: 500;
+        margin-top: 8px;
+    }
+
+    .context-badge.frontend {
+        background: #e7f5ff;
+        color: #0066cc;
+    }
+
+    .context-badge.admin {
+        background: #fff5eb;
+        color: #b35c00;
     }
 
     @media screen and (max-width: 1200px) {
