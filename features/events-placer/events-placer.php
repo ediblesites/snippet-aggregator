@@ -52,14 +52,39 @@ function render_event_announcement() {
     
     // Create announcement message with rotating prefix
     $prefixes = array(
-        'Join us for',
-        'Don\'t miss',
-        'See you at',
-        'Coming up:',
         'We\'ll be at',
+        'Find us at',
+        'Visit us at',
+        // 'Stop by our booth at',
+        'Come see us at',
+        'Meet our team at',
+        'Join us at',
         'Catch us at',
+        'See you at',
+        'Don\'t miss us at',
+        // 'Visit our booth at',
+        'Connect with us at',
         'Meet us at',
-        'Save the date:'
+        // 'We\'re exhibiting at',
+        // 'We\'re presenting at',
+        // 'We\'re showcasing at',
+        // 'Drop by our stand at',
+        'Come find us at',
+        'See our latest at',
+        // 'We\'re participating in',
+        'We\'re attending',
+        'Look for us at',
+        'Schedule a meeting at',
+        'Book a demo at',
+        'Get hands-on at',
+        'Learn more at',
+        'Discover our solutions at',
+        'Experience our products at',
+        'See what\'s new at',
+        'We\'re bringing innovation to',
+        'Live demos at',
+        'Network with us at',
+        'Connect and collaborate at'
     );
     
     $random_prefix = $prefixes[array_rand($prefixes)];
