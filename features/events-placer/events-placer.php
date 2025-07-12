@@ -10,8 +10,10 @@ if (!defined('ABSPATH')) {
 // Include status manager functionality
 require_once __DIR__ . '/includes/status-manager.php';
 
-// Populate announcement bar with upcoming event or hide if none exist
-function handle_event_announcement_bar() {
+// Register shortcode for event announcement
+add_shortcode('event_announcement', 'render_event_announcement');
+
+function render_event_announcement() {
     // Get the next upcoming event
     $upcoming_event = get_next_upcoming_event();
     
@@ -20,7 +22,7 @@ function handle_event_announcement_bar() {
         add_action('wp_head', function() {
             echo '<style>.announcement-bar { display: none !important; }</style>';
         });
-        return;
+        return '';
     }
     
     // Get event meta data
@@ -50,23 +52,7 @@ function handle_event_announcement_bar() {
     }
     $announcement .= " on {$formatted_date}";
     
-    // Get event permalink
-    $event_link = get_permalink($upcoming_event->ID);
-    
-    // Replace placeholders in theme areas
-    add_action('wp_head', function() use ($announcement, $event_link) {
-        echo '<script>
-            document.addEventListener("DOMContentLoaded", function() {
-                var announcementBar = document.querySelector(".announcement-bar");
-                if (announcementBar) {
-                    announcementBar.innerHTML = announcementBar.innerHTML
-                        .replace("{{EVENT_ANNOUNCEMENT}}", "' . addslashes($announcement) . '")
-                        .replace("http://{{EVENT_SLUG}}", "' . esc_url($event_link) . '")
-                        .replace("{{EVENT_SLUG}}", "' . esc_url($event_link) . '");
-                }
-            });
-        </script>';
-    });
+    return $announcement;
 }
 
 function get_next_upcoming_event() {
@@ -92,7 +78,4 @@ function get_next_upcoming_event() {
     $events = get_posts($args);
     
     return !empty($events) ? $events[0] : null;
-}
-
-// Hook into WordPress initialization
-add_action('init', 'handle_event_announcement_bar'); 
+} 
