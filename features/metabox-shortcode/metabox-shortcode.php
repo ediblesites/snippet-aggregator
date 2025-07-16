@@ -27,28 +27,26 @@ function metabox_field_shortcode($atts) {
         return '';
     }
     
-    // Early exit if not in proper context
-    if (is_admin()) {
-        return '';
-    }
-    
     // Check if Meta Box is active
     if (!function_exists('rwmb_get_value')) {
         return '';
     }
     
-    // Get post ID from current loop context
-    global $post, $wp_query;
-    
-    // Ensure we're in a proper loop context
-    if (!in_the_loop() || !$wp_query->in_the_loop || !$post || !isset($post->ID)) {
+    // Ensure we're working with the current loop post
+    global $post;
+    if (!$post) {
         return '';
     }
     
-    $post_id = $post->ID;
+    // Force setup post data to ensure Meta Box sees the current loop context
+    $original_post = $post;
+    setup_postdata($post);
     
-    // Get the raw value for custom formatting
-    $value = rwmb_get_value($atts['id'], '', $post_id);
+    // Get the raw value - let Meta Box handle the context
+    $value = rwmb_get_value($atts['id']);
+    
+    // Restore original post data
+    wp_reset_postdata();
     
     if (empty($value)) {
         return '';
@@ -93,7 +91,7 @@ function metabox_field_shortcode($atts) {
         default:
             // Use Meta Box's built-in formatting
             ob_start();
-            rwmb_the_value($atts['id'], '', $post_id);
+            rwmb_the_value($atts['id']);
             return ob_get_clean();
     }
     
