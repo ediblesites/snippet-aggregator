@@ -2,7 +2,6 @@
 /**
  * Shortcode to display Meta Box fields with custom formatting
  */
-
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -27,9 +26,9 @@ function metabox_field_shortcode($atts) {
     if (empty($atts['id'])) {
         return '';
     }
-
+    
     // Early exit if not in proper context
-    if (is_admin() || !get_the_ID()) {
+    if (is_admin()) {
         return '';
     }
     
@@ -37,8 +36,14 @@ function metabox_field_shortcode($atts) {
     if (!function_exists('rwmb_get_value')) {
         return '';
     }
-
-    $post_id = get_the_ID();
+    
+    // Get post ID from current loop context
+    global $post;
+    if (!$post || !isset($post->ID)) {
+        return '';
+    }
+    
+    $post_id = $post->ID;
     
     // Get the raw value for custom formatting
     $value = rwmb_get_value($atts['id'], '', $post_id);
@@ -86,11 +91,11 @@ function metabox_field_shortcode($atts) {
         default:
             // Use Meta Box's built-in formatting
             ob_start();
-            rwmb_the_value($atts['id']);
+            rwmb_the_value($atts['id'], '', $post_id);
             return ob_get_clean();
     }
     
     // Fallback to raw value if custom formatting fails
     return esc_html($value);
 }
-add_shortcode('metabox_field', 'metabox_field_shortcode'); 
+add_shortcode('metabox_field', 'metabox_field_shortcode');
