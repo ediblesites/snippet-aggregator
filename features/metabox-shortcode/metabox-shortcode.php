@@ -38,8 +38,10 @@ function metabox_field_shortcode($atts) {
     }
     
     // Get post ID from current loop context
-    global $post;
-    if (!$post || !isset($post->ID)) {
+    global $post, $wp_query;
+    
+    // Ensure we're in a proper loop context
+    if (!in_the_loop() || !$wp_query->in_the_loop || !$post || !isset($post->ID)) {
         return '';
     }
     
