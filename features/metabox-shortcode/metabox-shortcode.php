@@ -27,14 +27,21 @@ function metabox_field_shortcode($atts) {
     if (empty($atts['id'])) {
         return '';
     }
+
+    // Early exit if not in proper context
+    if (is_admin() || !get_the_ID()) {
+        return '';
+    }
     
     // Check if Meta Box is active
     if (!function_exists('rwmb_get_value')) {
         return '';
     }
+
+    $post_id = get_the_ID();
     
     // Get the raw value for custom formatting
-    $value = rwmb_get_value($atts['id']);
+    $value = rwmb_get_value($atts['id'], '', $post_id);
     
     if (empty($value)) {
         return '';
