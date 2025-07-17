@@ -72,19 +72,22 @@ function snippet_aggregator_load_features() {
     $is_admin = is_admin();
     
     foreach ($features as $feature_id => $feature) {
-        if (get_option("snippet_aggregator_feature_{$feature_id}", false)) {
-            // Check context restrictions
-            if (isset($feature['context'])) {
-                if ($feature['context'] === 'frontend' && $is_admin) {
-                    snippet_aggregator_log($feature_id, 'Feature skipped - frontend only', 'info');
-                    continue;
-                }
-                if ($feature['context'] === 'admin' && !$is_admin) {
-                    snippet_aggregator_log($feature_id, 'Feature skipped - admin only', 'info');
-                    continue;
-                }
+        $is_enabled = get_option("snippet_aggregator_feature_{$feature_id}", false);
+        $can_load = true;
+        
+        // Check context restrictions
+        if (!empty($feature['context'])) {
+            if ($feature['context'] === 'frontend' && $is_admin) {
+                snippet_aggregator_log($feature_id, 'Feature skipped - frontend only', 'info');
+                $can_load = false;
             }
+            if ($feature['context'] === 'admin' && !$is_admin) {
+                snippet_aggregator_log($feature_id, 'Feature skipped - admin only', 'info');
+                $can_load = false;
+            }
+        }
 
+        if ($is_enabled && $can_load) {
             // Load feature
             if (!isset($feature['main_file'])) {
                 snippet_aggregator_log($feature_id, 'No main file specified for feature', 'error');
@@ -92,13 +95,23 @@ function snippet_aggregator_load_features() {
             }
 
             $feature_file = SNIPPET_AGGREGATOR_PATH . "features/{$feature_id}/" . $feature['main_file'];
+            $settings_file = SNIPPET_AGGREGATOR_PATH . "features/{$feature_id}/settings.php";
 
             try {
+                // Load main feature file
                 if (file_exists($feature_file)) {
                     require_once $feature_file;
                     snippet_aggregator_log($feature_id, sprintf('Feature loaded successfully from %s', $feature_file), 'info');
                 } else {
                     snippet_aggregator_log($feature_id, sprintf('Feature file %s not found', $feature_file), 'error');
+                }
+                
+                // Load settings file if in admin and allowed
+                if ($is_admin && file_exists($settings_file)) {
+                    if (empty($feature['context']) || $feature['context'] !== 'frontend') {
+                        require_once $settings_file;
+                        snippet_aggregator_log($feature_id, 'Settings loaded successfully', 'info');
+                    }
                 }
             } catch (Exception $e) {
                 snippet_aggregator_log($feature_id, 'Failed to load feature: ' . $e->getMessage(), 'error');

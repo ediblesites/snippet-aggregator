@@ -20,33 +20,6 @@ function snippet_aggregator_add_menu_items() {
     );
 }
 
-// Register settings
-add_action('admin_init', 'snippet_aggregator_register_settings');
-function snippet_aggregator_register_settings() {
-    // Debug mode
-    register_setting(
-        'snippet_aggregator_settings',
-        'snippet_aggregator_debug_mode',
-        [
-            'type' => 'boolean',
-            'default' => false,
-        ]
-    );
-    
-    // Register settings for each feature
-    $features = snippet_aggregator_get_available_features();
-    foreach ($features as $feature_id => $feature) {
-        register_setting(
-            'snippet_aggregator_settings',
-            "snippet_aggregator_feature_{$feature_id}",
-            [
-                'type' => 'boolean',
-                'default' => false,
-            ]
-        );
-    }
-}
-
 // Helper function to get available features
 function snippet_aggregator_get_available_features() {
     $features = [];
@@ -92,6 +65,72 @@ function snippet_aggregator_get_available_features() {
     return $features;
 }
 
+// Register settings
+add_action('admin_init', 'snippet_aggregator_register_settings');
+function snippet_aggregator_register_settings() {
+    // Debug mode
+    register_setting(
+        'snippet_aggregator_settings',
+        'snippet_aggregator_debug_mode',
+        [
+            'type' => 'boolean',
+            'default' => false,
+        ]
+    );
+    
+    // Register settings for each feature
+    $features = snippet_aggregator_get_available_features();
+    foreach ($features as $feature_id => $feature) {
+        register_setting(
+            'snippet_aggregator_settings',
+            "snippet_aggregator_feature_{$feature_id}",
+            [
+                'type' => 'boolean',
+                'default' => false,
+            ]
+        );
+    }
+}
+
+// Helper function to get feature settings tabs
+function snippet_aggregator_get_feature_settings() {
+    $settings_tabs = [];
+    $features = snippet_aggregator_get_available_features();
+    
+    foreach ($features as $feature_id => $feature) {
+        // Convert hyphens to underscores for function names
+        $function_id = str_replace('-', '_', $feature_id);
+        
+        // Settings file should define these functions if it was loaded:
+        // {feature_id}_register_settings()
+        // {feature_id}_render_settings()
+        $register_func = $function_id . '_register_settings';
+        $render_func = $function_id . '_render_settings';
+        
+        if (function_exists($register_func) && function_exists($render_func)) {
+            $settings_tabs[$feature_id] = [
+                'name' => $feature['name'],
+                'register_callback' => $register_func,
+                'render_callback' => $render_func
+            ];
+        }
+    }
+    
+    return $settings_tabs;
+}
+
+// Register feature-specific settings
+add_action('admin_init', 'snippet_aggregator_register_feature_settings');
+function snippet_aggregator_register_feature_settings() {
+    // Register feature settings
+    $settings_tabs = snippet_aggregator_get_feature_settings();
+    foreach ($settings_tabs as $feature_id => $tab) {
+        if (function_exists($tab['register_callback'])) {
+            call_user_func($tab['register_callback']);
+        }
+    }
+}
+
 // Add AJAX handlers for feature toggling
 add_action('wp_ajax_snippet_aggregator_toggle_feature', 'snippet_aggregator_ajax_toggle_feature');
 function snippet_aggregator_ajax_toggle_feature() {
@@ -129,6 +168,9 @@ function snippet_aggregator_render_admin_page() {
         return;
     }
 
+    // Get available settings tabs
+    $settings_tabs = snippet_aggregator_get_feature_settings();
+    
     // Get current tab
     $current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'features';
     ?>
@@ -139,9 +181,15 @@ function snippet_aggregator_render_admin_page() {
             <a href="?page=snippet-aggregator&tab=features" class="nav-tab <?php echo $current_tab === 'features' ? 'nav-tab-active' : ''; ?>">
                 <?php _e('Features', 'snippet-aggregator'); ?>
             </a>
-            <a href="?page=snippet-aggregator&tab=settings" class="nav-tab <?php echo $current_tab === 'settings' ? 'nav-tab-active' : ''; ?>">
-                <?php _e('Settings', 'snippet-aggregator'); ?>
+            <a href="?page=snippet-aggregator&tab=core-settings" class="nav-tab <?php echo $current_tab === 'core-settings' ? 'nav-tab-active' : ''; ?>">
+                <?php _e('Core Settings', 'snippet-aggregator'); ?>
             </a>
+            <?php foreach ($settings_tabs as $feature_id => $tab): ?>
+                <a href="?page=snippet-aggregator&tab=<?php echo esc_attr($feature_id); ?>" 
+                   class="nav-tab <?php echo $current_tab === $feature_id ? 'nav-tab-active' : ''; ?>">
+                    <?php echo esc_html($tab['name']); ?>
+                </a>
+            <?php endforeach; ?>
         </nav>
 
         <?php settings_errors('snippet_aggregator_messages'); ?>
@@ -150,8 +198,11 @@ function snippet_aggregator_render_admin_page() {
             <?php
             if ($current_tab === 'features') {
                 snippet_aggregator_render_features_tab();
-            } else {
-                snippet_aggregator_render_settings_tab();
+            } elseif ($current_tab === 'core-settings') {
+                snippet_aggregator_render_core_settings_tab();
+            } elseif (isset($settings_tabs[$current_tab])) {
+                // Render feature settings
+                call_user_func($settings_tabs[$current_tab]['render_callback']);
             }
             ?>
         </div>
@@ -384,8 +435,8 @@ function snippet_aggregator_render_features_tab() {
     <?php
 }
 
-// Render settings tab content
-function snippet_aggregator_render_settings_tab() {
+// Render core settings tab content
+function snippet_aggregator_render_core_settings_tab() {
     ?>
     <div class="shortcode-info" style="margin: 10px 0 20px; padding: 12px 15px; background: #fff; border: 1px solid #c3c4c7; border-left: 4px solid #2271b1; box-shadow: 0 1px 1px rgba(0,0,0,.04);">
         <code style="font-size: 13px; background: #f0f0f1; padding: 3px 5px; border-radius: 3px;">[snippet_aggregator_version format="v-prefix"]</code>
