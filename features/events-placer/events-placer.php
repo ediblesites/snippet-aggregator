@@ -106,13 +106,13 @@ function get_next_upcoming_event() {
         'posts_per_page' => 1,
         'meta_query' => array(
             array(
-                'key' => 'event_start_date',
+                'key' => 'event_end_date',  // Check against end date
                 'value' => $today,
-                'compare' => '>=',
+                'compare' => '>=',  // Event hasn't ended yet
                 'type' => 'DATE'
             )
         ),
-        'meta_key' => 'event_start_date',
+        'meta_key' => 'event_start_date',  // Still order by start date
         'orderby' => 'meta_value',
         'order' => 'ASC'
     );
