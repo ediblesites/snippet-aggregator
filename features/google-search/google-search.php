@@ -19,17 +19,17 @@ function template_based_search_results($posts, $query) {
         return $posts;
     }
     
-    // Google Custom Search API configuration from wp-config
-    $api_key = defined('GOOGLE_SEARCH_API_KEY') ? GOOGLE_SEARCH_API_KEY : '';
-    $cse_id = defined('GOOGLE_SEARCH_CSE_ID') ? GOOGLE_SEARCH_CSE_ID : '';
+    // Get Google Custom Search API configuration
+    $api_key = get_option('snippet_aggregator_google_search_api_key', '');
+    $cse_id = get_option('snippet_aggregator_google_search_cse_id', '');
     
     // Check if API credentials are configured
     if (empty($api_key) || empty($cse_id)) {
         global $search_template_results;
         $search_template_results = array(array(
             'title' => 'Google Search Not Configured',
-            'excerpt' => 'Add GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_CSE_ID to your wp-config.php file to enable Google Custom Search.',
-            'url' => '#',
+            'excerpt' => 'Please configure your Google Search API credentials in Settings > Snippet Aggregator.',
+            'url' => admin_url('options-general.php?page=snippet-aggregator'),
             'date' => '',
             'author' => '',
             'meta' => 'Configuration Required',
