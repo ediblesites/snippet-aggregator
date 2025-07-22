@@ -210,7 +210,7 @@ function render_template_search_results($template_post_id) {
 }
 
 // Shortcode to display template-based search results with standard WordPress pagination
-function template_search_shortcode($atts) {
+function google_search_shortcode($atts) {
     $atts = shortcode_atts(array(
         'template_id' => 0
     ), $atts);
@@ -312,4 +312,4 @@ function template_search_shortcode($atts) {
     
     return $results_html;
 }
-add_shortcode('template_search_results', 'template_search_shortcode'); 
+add_shortcode('google_search_results', 'google_search_shortcode'); 
