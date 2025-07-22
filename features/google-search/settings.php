@@ -36,12 +36,14 @@ function google_search_render_settings() {
     <form action="options.php" method="post">
         <?php 
         settings_fields('snippet_aggregator_settings');
-        $current_toggle = get_option('snippet_aggregator_feature_google-search') ? '1' : '0';
-        ?>
         
-        <input type="hidden" 
-               name="snippet_aggregator_feature_google-search" 
-               value="<?php echo $current_toggle; ?>">
+        // Include all feature toggles to prevent them from being deleted
+        $features = snippet_aggregator_get_available_features();
+        foreach ($features as $feature_id => $feature) {
+            $current_toggle = get_option("snippet_aggregator_feature_{$feature_id}") ? '1' : '0';
+            echo '<input type="hidden" name="snippet_aggregator_feature_' . esc_attr($feature_id) . '" value="' . $current_toggle . '">';
+        }
+        ?>
         
         <h2><?php _e('Google Search API Settings', 'snippet-aggregator'); ?></h2>
         <p class="description">
