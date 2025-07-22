@@ -7,105 +7,36 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-// Intercept search queries and redirect them if needed
-function redirect_search_queries() {
-    // Only handle search queries
-    if (!is_search()) {
-        return;
-    }
-
-    // Get the search query
-    $search_term = get_search_query();
-    if (empty($search_term)) {
-        return;
-    }
-
-    // Get Google Custom Search API configuration
-    $api_key = get_option('snippet_aggregator_google_search_api_key', '');
-    $cse_id = get_option('snippet_aggregator_google_search_cse_id', '');
-    
-    // If Google Search is configured, we can optionally redirect to a custom URL structure
-    if (!empty($api_key) && !empty($cse_id)) {
-        // Example: Redirect ?s=query to /search/query/
-        // Uncomment the following lines to enable URL rewriting:
-        /*
-        $search_url = home_url('/search/' . urlencode($search_term) . '/');
-        if (!empty(get_query_var('paged'))) {
-            $search_url .= 'page/' . get_query_var('paged') . '/';
-        }
-        wp_redirect($search_url);
-        exit;
-        */
-    }
-}
-add_action('template_redirect', 'redirect_search_queries');
-
-// Prevent WordPress from running its default search when Google Search is configured
-function prevent_default_search($query) {
-    // Only modify main search query
-    if (!$query->is_search() || !$query->is_main_query()) {
-        return;
-    }
-    
-    // Get Google Custom Search API configuration from settings
-    $api_key = get_option('snippet_aggregator_google_search_api_key', '');
-    $cse_id = get_option('snippet_aggregator_google_search_cse_id', '');
-    
-    // If Google Search is configured, prevent WordPress search
-    if (!empty($api_key) && !empty($cse_id)) {
-        // This prevents WordPress from running its search query
-        $query->set('post__in', array(0));
-    }
-}
-add_action('pre_get_posts', 'prevent_default_search');
-
 // Template-based search results using Google Custom Search API with standard pagination
 function template_based_search_results($posts, $query) {
-    
+	
     if (!$query->is_search() || !$query->is_main_query()) {
         return $posts;
     }
     
-    // TEST OUTPUT - Remove after verification
-    global $search_template_results;
-    $search_template_results = array(array(
-        'title' => 'Hello World',
-        'excerpt' => 'This is a test to verify the template override is working.',
-        'url' => '#',
-        'date' => date('F j, Y'),
-        'author' => 'Test',
-        'meta' => 'Test Output',
-        'breadcrumb' => 'Test',
-        'image' => ''
-    ));
-    return array();
-
-    // Original code starts here
     $search_term = $query->get('s');
     if (empty($search_term)) {
         return $posts;
     }
     
-    // Get Google Custom Search API configuration from settings
-    $api_key = get_option('snippet_aggregator_google_search_api_key', '');
-    $cse_id = get_option('snippet_aggregator_google_search_cse_id', '');
+    // Google Custom Search API configuration from wp-config
+    $api_key = defined('GOOGLE_SEARCH_API_KEY') ? GOOGLE_SEARCH_API_KEY : '';
+    $cse_id = defined('GOOGLE_SEARCH_CSE_ID') ? GOOGLE_SEARCH_CSE_ID : '';
     
     // Check if API credentials are configured
     if (empty($api_key) || empty($cse_id)) {
         global $search_template_results;
         $search_template_results = array(array(
             'title' => 'Google Search Not Configured',
-            'excerpt' => 'Please configure your Google Search API credentials in Settings > Snippet Aggregator.',
-            'url' => admin_url('options-general.php?page=snippet-aggregator'),
+            'excerpt' => 'Add GOOGLE_SEARCH_API_KEY and GOOGLE_SEARCH_CSE_ID to your wp-config.php file to enable Google Custom Search.',
+            'url' => '#',
             'date' => '',
             'author' => '',
             'meta' => 'Configuration Required',
             'breadcrumb' => 'Error',
             'image' => ''
         ));
-        // Prevent WordPress from running its search
-        $query->set('post__in', array(0));
-        return;
+        return array();
     }
     
     // Get current page - WordPress uses 'paged' for pagination
@@ -124,9 +55,7 @@ function template_based_search_results($posts, $query) {
             $query->max_num_pages = $cached_data['max_pages'];
         }
         
-        // Prevent WordPress from running its search
-        $query->set('post__in', array(0));
-        return;
+        return array();
     }
     
     // No cache found, fetch from Google API
@@ -151,9 +80,7 @@ function template_based_search_results($posts, $query) {
     if (is_wp_error($response)) {
         global $search_template_results;
         $search_template_results = array();
-        // Prevent WordPress from running its search
-        $query->set('post__in', array(0));
-        return;
+        return array();
     }
     
     $body = wp_remote_retrieve_body($response);
@@ -162,9 +89,7 @@ function template_based_search_results($posts, $query) {
     if (empty($data['items'])) {
         global $search_template_results;
         $search_template_results = array();
-        // Prevent WordPress from running its search
-        $query->set('post__in', array(0));
-        return;
+        return array();
     }
     
     // Convert Google results to template format
@@ -231,8 +156,7 @@ function template_based_search_results($posts, $query) {
     $query->found_posts = $total_results;
     $query->max_num_pages = $max_pages;
     
-    // Prevent WordPress from running its search
-    $query->set('post__in', array(0));
+    return array();
 }
 add_filter('posts_results', 'template_based_search_results', 10, 2);
 
