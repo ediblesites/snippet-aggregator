@@ -9,6 +9,17 @@ if (!defined('ABSPATH')) {
 
 // Register settings
 function google_search_register_settings() {
+    // Register feature toggle setting
+    register_setting(
+        'snippet_aggregator_settings',
+        'snippet_aggregator_feature_google-search',
+        [
+            'type' => 'boolean',
+            'default' => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]
+    );
+
     register_setting(
         'snippet_aggregator_settings',
         'snippet_aggregator_google_search_api_key',
