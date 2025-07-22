@@ -9,6 +9,17 @@ if (!defined('ABSPATH')) {
 
 // Register settings
 function glossary_handler_register_settings() {
+    // Register feature toggle setting
+    register_setting(
+        'snippet_aggregator_settings',
+        'snippet_aggregator_feature_glossary-handler',
+        [
+            'type' => 'boolean',
+            'default' => true,
+            'sanitize_callback' => 'rest_sanitize_boolean',
+        ]
+    );
+
     register_setting(
         'snippet_aggregator_settings',
         'glossary_post_types',
