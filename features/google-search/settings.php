@@ -9,19 +9,8 @@ if (!defined('ABSPATH')) {
 
 // Register settings
 function google_search_register_settings() {
-    // Register feature toggle setting
     register_setting(
-        'snippet_aggregator_settings',
-        'snippet_aggregator_feature_google-search',
-        [
-            'type' => 'boolean',
-            'default' => true,
-            'sanitize_callback' => 'rest_sanitize_boolean',
-        ]
-    );
-
-    register_setting(
-        'snippet_aggregator_settings',
+        'snippet_aggregator_google_search_settings',
         'snippet_aggregator_google_search_api_key',
         [
             'type' => 'string',
@@ -31,7 +20,7 @@ function google_search_register_settings() {
     );
     
     register_setting(
-        'snippet_aggregator_settings',
+        'snippet_aggregator_google_search_settings',
         'snippet_aggregator_google_search_cse_id',
         [
             'type' => 'string',
@@ -45,12 +34,14 @@ function google_search_register_settings() {
 function google_search_render_settings() {
     ?>
     <form action="options.php" method="post">
-        <?php settings_fields('snippet_aggregator_settings'); ?>
+        <?php 
+        settings_fields('snippet_aggregator_settings');
+        $current_toggle = get_option('snippet_aggregator_feature_google-search') ? '1' : '0';
+        ?>
         
-        <!-- Preserve feature toggle -->
         <input type="hidden" 
                name="snippet_aggregator_feature_google-search" 
-               value="1">
+               value="<?php echo $current_toggle; ?>">
         
         <h2><?php _e('Google Search API Settings', 'snippet-aggregator'); ?></h2>
         <p class="description">

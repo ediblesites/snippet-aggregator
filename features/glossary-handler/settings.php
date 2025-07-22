@@ -9,19 +9,8 @@ if (!defined('ABSPATH')) {
 
 // Register settings
 function glossary_handler_register_settings() {
-    // Register feature toggle setting
     register_setting(
-        'snippet_aggregator_settings',
-        'snippet_aggregator_feature_glossary-handler',
-        [
-            'type' => 'boolean',
-            'default' => true,
-            'sanitize_callback' => 'rest_sanitize_boolean',
-        ]
-    );
-
-    register_setting(
-        'snippet_aggregator_settings',
+        'snippet_aggregator_glossary_settings',
         'glossary_post_types',
         [
             'type' => 'array',
@@ -33,7 +22,7 @@ function glossary_handler_register_settings() {
     );
     
     register_setting(
-        'snippet_aggregator_settings',
+        'snippet_aggregator_glossary_settings',
         'glossary_exclusions',
         [
             'type' => 'string',
@@ -43,7 +32,7 @@ function glossary_handler_register_settings() {
     );
     
     register_setting(
-        'snippet_aggregator_settings',
+        'snippet_aggregator_glossary_settings',
         'glossary_inclusions',
         [
             'type' => 'string',
@@ -73,12 +62,14 @@ function glossary_handler_render_settings() {
     $all_post_types = get_post_types(['public' => true], 'objects');
     ?>
     <form action="options.php" method="post">
-        <?php settings_fields('snippet_aggregator_settings'); ?>
+        <?php 
+        settings_fields('snippet_aggregator_settings');
+        $current_toggle = get_option('snippet_aggregator_feature_glossary-handler') ? '1' : '0';
+        ?>
         
-        <!-- Preserve feature toggle -->
         <input type="hidden" 
                name="snippet_aggregator_feature_glossary-handler" 
-               value="1">
+               value="<?php echo $current_toggle; ?>">
         
         <h2><?php _e('Glossary Settings', 'snippet-aggregator'); ?></h2>
         
