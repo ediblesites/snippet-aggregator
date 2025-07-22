@@ -10,7 +10,7 @@ if (!defined('ABSPATH')) {
 // Register settings
 function glossary_handler_register_settings() {
     register_setting(
-        'snippet_aggregator_glossary_settings',
+        'snippet_aggregator_settings',
         'glossary_post_types',
         [
             'type' => 'array',
@@ -22,7 +22,7 @@ function glossary_handler_register_settings() {
     );
     
     register_setting(
-        'snippet_aggregator_glossary_settings',
+        'snippet_aggregator_settings',
         'glossary_exclusions',
         [
             'type' => 'string',
@@ -32,7 +32,7 @@ function glossary_handler_register_settings() {
     );
     
     register_setting(
-        'snippet_aggregator_glossary_settings',
+        'snippet_aggregator_settings',
         'glossary_inclusions',
         [
             'type' => 'string',
