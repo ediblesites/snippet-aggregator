@@ -1,0 +1,48 @@
+---
+alwaysApply: true
+---
+
+# Feature Creation Rules
+
+When creating a new feature from provided code:
+
+## 1. Directory Structure
+- Create feature directory under `features/` using kebab-case
+- Create two files:
+  - `info.php`
+  - `{feature-name}.php` (matching directory name)
+
+## 2. Info File Format
+```php
+<?php
+return [
+    'name' => 'Feature Name',
+    'description' => 'Brief description',
+    'default' => true,
+    'main_file' => '{feature-name}.php',
+];
+```
+
+## 3. Code File Format
+Only prepend these elements to the provided code:
+```php
+<?php
+/**
+ * Brief description of feature purpose
+ */
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+// Original code follows exactly as provided...
+```
+
+## 4. Rules
+1. DO NOT modify the provided code
+2. DO NOT add namespaces
+3. DO NOT add function wrappers
+4. DO NOT add additional hooks
+5. DO NOT add documentation beyond the initial description
+6. DO NOT reorganize or restructure the code
+7. ONLY prepend the header comment and ABSPATH check # Feature Creation Rules
