@@ -1,8 +1,3 @@
-/* 
-.wp-block-details {
-    width: 100%;
-}
-
 .wp-block-details::details-content {
     display: block;
     block-size: 0;
@@ -14,6 +9,11 @@
 
 .wp-block-details[open]::details-content {
     /*block-size: auto;*/
-    /*block-size: calc-size(auto, size);
+    block-size: calc-size(auto, size);
 }
-*/ 
+
+.width-668 {
+    width: 668px;
+    margin-left: auto;
+    margin-right: auto;
+} 
