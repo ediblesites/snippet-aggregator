@@ -14,6 +14,6 @@
 
 .wp-block-details[open]::details-content {
     /*block-size: auto;*/
-    block-size: calc-size(auto, size);
+    /*block-size: calc-size(auto, size);
 }
 */ 
