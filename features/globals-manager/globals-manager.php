@@ -204,17 +204,14 @@ function globals_manager_delete_ajax() {
     wp_send_json_success('Global deleted successfully');
 }
 
-// Register all shortcodes on init
+// Register shortcodes
 add_action('init', 'globals_manager_register_shortcodes');
 
 function globals_manager_register_shortcodes() {
     $pairs = get_option('globals_manager_pairs', array());
-    
-    if (!empty($pairs)) {
-        foreach ($pairs as $name => $content) {
-            add_shortcode($name, function($atts) use ($content) {
-                return $content;
-            });
-        }
+    foreach ($pairs as $name => $content) {
+        add_shortcode($name, function() use ($content) {
+            return $content;
+        });
     }
 } 
