@@ -62,6 +62,11 @@ function snippet_aggregator_get_available_features() {
         $features[$dir] = $info;
     }
     
+    // Sort features by name
+    uasort($features, function($a, $b) {
+        return strcasecmp($a['name'], $b['name']);
+    });
+    
     return $features;
 }
 
