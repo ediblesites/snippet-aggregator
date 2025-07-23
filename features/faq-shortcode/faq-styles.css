@@ -1,13 +1,19 @@
 .wp-block-details::details-content {
     display: block;
-    height: 0;
-    width: 100%;
+    block-size: 0;
+    inline-size: 100%; /* Maintain full width */
     overflow: hidden;
-    transition-property: height;
+    transition-property: block-size, content-visibility;
     transition-duration: 0.5s;
-    transition-timing-function: ease-out;
+    transition-behavior: allow-discrete;
 }
 
 .wp-block-details[open]::details-content {
-    height: auto;
+    block-size: calc-size(auto, size);
+}
+
+/* Ensure the details element itself maintains width */
+.wp-block-details {
+    inline-size: 100%;
+    min-inline-size: 100%;
 } 
