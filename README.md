@@ -37,7 +37,8 @@ Features are organized in a modular structure:
 features/
 ├── feature-name/
 │   ├── feature-name.php    # Main feature code
-│   └── info.php           # Feature metadata
+│   ├── settings.php       # Optional settings (if needed)
+│   └── info.php          # Feature metadata
 ```
 
 ### Adding a New Feature
@@ -57,18 +58,19 @@ The `info.php` file must return an array with these keys:
 return [
     'name' => 'Feature Name',        // Human-readable name
     'description' => 'One line description of what the feature does',
-    'main_file' => 'feature-name.php' // Must match your main file name
+    'main_file' => 'feature-name.php', // Must match your main file name
+    'context' => 'admin'  // Optional: 'admin', 'frontend', or omit for both
 ];
 ```
 
 ### settings.php Format
 
-If your feature requires settings, create a `settings.php` file in your feature directory. This file must define two functions:
+If your feature requires settings, create a `settings.php` file in your feature directory. This file must define two functions using underscores (not hyphens) in the names:
 
 ```php
 <?php
-// Register your feature's settings
-function feature_name_register_settings() {
+// For a feature directory named 'my-feature':
+function my_feature_register_settings() {  // Use underscores, not hyphens
     register_setting(
         'snippet_aggregator_settings',
         'setting_name',
@@ -80,11 +82,13 @@ function feature_name_register_settings() {
     );
 }
 
-// Render your feature's settings page
-function feature_name_render_settings() {
+function my_feature_render_settings() {  // Use underscores, not hyphens
     ?>
     <form action="options.php" method="post">
-        <?php settings_fields('snippet_aggregator_settings'); ?>
+        <?php 
+        settings_fields('snippet_aggregator_settings');
+        // Security is automatically handled - nonce verification and capability checks
+        ?>
         
         <h2>Feature Settings</h2>
         <!-- Your settings form fields here -->
@@ -95,22 +99,51 @@ function feature_name_render_settings() {
 }
 ```
 
+### Settings Behavior
+
 The presence of a `settings.php` file will:
 1. Register your settings when WordPress initializes
-2. Add a settings tab for your feature in the Snippet Aggregator settings page*
+2. Add a settings tab for your feature in the Snippet Aggregator settings page
 3. Render your settings page when your tab is active
 
-*Note: Your feature's settings tab will only be visible if:
+Settings tabs are only visible and loaded if:
 - The feature is enabled in the Features tab
 - The feature is allowed to run in the admin context (either has no context specified or has context = 'admin' in info.php)
+- Both required functions exist and follow the naming convention
 
-Example info.php with context:
+### Accessing Feature Settings
+
+Settings are stored using WordPress options API. Access them in your feature code using:
 ```php
-<?php
-return [
-    'name' => 'My Feature',
-    'description' => 'Feature description',
-    'main_file' => 'my-feature.php',
-    'context' => 'admin'  // or 'frontend', or omit for both
-];
+$setting_value = get_option('your_setting_name', 'default_value');
+```
+
+### Security
+
+The settings system includes several security measures:
+- Automatic nonce verification for all settings forms
+- Capability checks ('manage_options' required)
+- Settings are only loaded for enabled features
+- Frontend-only features cannot load settings in admin
+- Input sanitization through WordPress Settings API
+
+### Debug Mode
+
+When debug mode is enabled in Core Settings:
+- Settings loading events are logged
+- Settings registration is tracked
+- Failed settings loads are logged with error details
+- Settings access is logged when debug logging is enabled
+
+This helps troubleshoot issues with feature settings by providing detailed logs about:
+- When settings files are loaded
+- Whether required functions are found
+- Any errors during settings registration
+- Settings access patterns
+
+Example debug log entries:
+```
+[info] my-feature: Settings loaded successfully
+[error] another-feature: No settings functions found
+[info] third-feature: Settings registered with 3 options
 ```
