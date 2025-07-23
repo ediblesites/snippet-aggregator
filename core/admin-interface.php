@@ -219,76 +219,52 @@ function snippet_aggregator_render_admin_page() {
 function snippet_aggregator_render_features_tab() {
     $features = snippet_aggregator_get_available_features();
     ?>
-    <div id="snippet-aggregator-features">
-        <div class="snippet-aggregator-features-grid">
-            <?php foreach ($features as $feature_id => $feature): ?>
-                <div class="feature-column">
-                    <div class="feature-info">
-                        <h3><?php echo esc_html($feature['name']); ?></h3>
-                        <p class="description"><?php echo esc_html($feature['description']); ?></p>
-                        <?php if (isset($feature['context'])): ?>
-                            <span class="context-badge <?php echo esc_attr($feature['context']); ?>">
-                                <?php echo esc_html(ucfirst($feature['context'])); ?>
-                            </span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="feature-toggle">
-                        <label class="snippet-aggregator-switch">
-                            <input type="checkbox"
-                                   class="snippet-aggregator-feature-toggle"
-                                   data-feature="<?php echo esc_attr($feature_id); ?>"
-                                   <?php checked(get_option("snippet_aggregator_feature_{$feature_id}", false)); ?>>
-                            <span class="slider round"></span>
-                        </label>
-                    </div>
-                </div>
-            <?php endforeach; ?>
-        </div>
+    <div id="snippet-aggregator-features" class="wrap">
+        <table class="wp-list-table widefat fixed striped">
+            <thead>
+                <tr>
+                    <th class="column-toggle"><?php _e('Status', 'snippet-aggregator'); ?></th>
+                    <th class="column-context"><?php _e('Context', 'snippet-aggregator'); ?></th>
+                    <th class="column-title"><?php _e('Feature', 'snippet-aggregator'); ?></th>
+                    <th class="column-description"><?php _e('Description', 'snippet-aggregator'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($features as $feature_id => $feature): ?>
+                    <tr>
+                        <td class="column-toggle">
+                            <label class="snippet-aggregator-switch">
+                                <input type="checkbox"
+                                       class="snippet-aggregator-feature-toggle"
+                                       data-feature="<?php echo esc_attr($feature_id); ?>"
+                                       <?php checked(get_option("snippet_aggregator_feature_{$feature_id}", false)); ?>>
+                                <span class="slider round"></span>
+                            </label>
+                        </td>
+                        <td class="column-context">
+                            <?php if (isset($feature['context'])): ?>
+                                <span class="context-badge <?php echo esc_attr($feature['context']); ?>">
+                                    <?php echo esc_html(ucfirst($feature['context'])); ?>
+                                </span>
+                            <?php else: ?>
+                                <span class="context-badge all">
+                                    <?php _e('All', 'snippet-aggregator'); ?>
+                                </span>
+                            <?php endif; ?>
+                        </td>
+                        <td class="column-title">
+                            <strong><?php echo esc_html($feature['name']); ?></strong>
+                        </td>
+                        <td class="column-description">
+                            <?php echo esc_html($feature['description']); ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
     </div>
 
     <style>
-    .snippet-aggregator-features-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr); /* Changed to 2 columns */
-        gap: 20px; /* Increased gap for better separation */
-        margin-top: 15px;
-    }
-
-    .feature-column {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        padding: 16px; /* Slightly more padding */
-        background: #fff;
-        border: 1px solid #ccd0d4;
-        border-radius: 4px;
-        height: 100%; /* Ensure equal height */
-        box-sizing: border-box;
-    }
-
-    .feature-info {
-        flex: 1;
-        padding-right: 20px; /* More space before toggle */
-        min-width: 0; /* Allow text to wrap */
-    }
-
-    .feature-info h3 {
-        margin: 0 0 8px 0;
-        font-size: 1.1em;
-        line-height: 1.3;
-    }
-
-    .feature-info .description {
-        margin: 0;
-        color: #646970;
-        line-height: 1.5;
-    }
-
-    .feature-toggle {
-        flex-shrink: 0;
-        padding-top: 2px;
-    }
-
     .snippet-aggregator-switch {
         position: relative;
         display: inline-block;
@@ -357,9 +333,8 @@ function snippet_aggregator_render_features_tab() {
         display: inline-block;
         padding: 2px 8px;
         border-radius: 3px;
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 500;
-        margin-top: 8px;
     }
 
     .context-badge.frontend {
@@ -372,25 +347,47 @@ function snippet_aggregator_render_features_tab() {
         color: #b35c00;
     }
 
-    @media screen and (max-width: 1200px) {
-        .snippet-aggregator-features-grid {
-            grid-template-columns: 1fr; /* Single column on smaller screens */
-        }
+    .context-badge.all {
+        background: #e7f7e7;
+        color: #006600;
     }
 
-    @media screen and (max-width: 782px) {
-        .feature-column {
-            flex-direction: column;
-        }
-        
-        .feature-info {
-            padding-right: 0;
-            padding-bottom: 10px;
-        }
-        
-        .feature-toggle {
-            align-self: flex-start;
-        }
+    #snippet-aggregator-features .column-toggle {
+        width: 10%;
+        text-align: center;
+    }
+
+    #snippet-aggregator-features .column-context {
+        width: 15%;
+    }
+
+    #snippet-aggregator-features .column-title {
+        width: 25%;
+    }
+
+    #snippet-aggregator-features .column-description {
+        width: 50%;
+    }
+
+    #snippet-aggregator-features td {
+        vertical-align: middle;
+        padding-top: 12px;
+        padding-bottom: 12px;
+    }
+
+    #snippet-aggregator-features th {
+        font-size: 14px;
+    }
+
+    #snippet-aggregator-features td.column-title strong {
+        font-size: 14px;
+        display: block;
+        margin-bottom: 2px;
+    }
+
+    #snippet-aggregator-features td.column-description {
+        font-size: 13px;
+        line-height: 1.5;
     }
     </style>
 
