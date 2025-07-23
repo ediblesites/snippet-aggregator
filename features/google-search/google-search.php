@@ -9,6 +9,10 @@ if (!defined('ABSPATH')) {
 
 // Template-based search results using Google Custom Search API with standard pagination
 function template_based_search_results($posts, $query) {
+    // Skip if in admin area
+    if (is_admin()) {
+        return $posts;
+    }
 	
     if (!$query->is_search() || !$query->is_main_query()) {
         return $posts;
