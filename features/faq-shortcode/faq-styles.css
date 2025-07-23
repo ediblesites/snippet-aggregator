@@ -1,0 +1,13 @@
+.wp-block-details::details-content {
+    display: block;
+    block-size: 0;
+    overflow: hidden;
+    transition-property: block-size, content-visibility;
+    transition-duration: 0.5s;
+    transition-behavior: allow-discrete;
+}
+
+.wp-block-details[open]::details-content {
+    block-size: auto;
+    block-size: calc-size(auto, size);
+} 

@@ -7,6 +7,17 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Enqueue FAQ styles
+function enqueue_faq_styles() {
+    wp_enqueue_style(
+        'faq-shortcode-styles',
+        plugins_url('faq-styles.css', __FILE__),
+        [],
+        filemtime(plugin_dir_path(__FILE__) . 'faq-styles.css')
+    );
+}
+add_action('wp_enqueue_scripts', 'enqueue_faq_styles');
+
 // Get template from the faq-template page
 function get_faq_template() {
     $page = get_page_by_path('faq-template', OBJECT, ['page', 'utility']);
