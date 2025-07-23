@@ -18,7 +18,6 @@ When creating a new feature from provided code:
 return [
     'name' => 'Feature Name',
     'description' => 'Brief description',
-    'default' => true,
     'main_file' => '{feature-name}.php',
 ];
 ```

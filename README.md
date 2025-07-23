@@ -76,7 +76,6 @@ function my_feature_register_settings() {  // Use underscores, not hyphens
         'setting_name',
         [
             'type' => 'string',
-            'default' => '',
             'sanitize_callback' => 'sanitize_text_field',
         ]
     );
