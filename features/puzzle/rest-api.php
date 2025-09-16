@@ -55,7 +55,9 @@ function get_puzzle_images($request) {
             
             // Always add radio_puzzle field to the image data
             $image_data = array(
-                'url' => $featured_image_url
+                'url' => $featured_image_url,
+                'id' => $integration->ID,
+                'permalink' => get_permalink($integration->ID)
             );
             
             if ($puzzle_setting === 'always') {
@@ -77,15 +79,9 @@ function get_puzzle_images($request) {
         $images = array_merge($images, array_slice($default_images, 0, $remaining_slots));
     }
     
-    // Extract just the URLs for the final response (maintaining backward compatibility)
-    $image_urls = array();
-    foreach ($images as $image_data) {
-        $image_urls[] = $image_data['url'];
-    }
-    
     return rest_ensure_response(array(
         'success' => true,
-        'images' => $image_urls,
-        'total_integrations' => (int)$total_integrations // Add total count to response
+        'images' => $images, // Each image object contains url, id, title
+        'total_integrations' => (int)$total_integrations
     ));
 } 

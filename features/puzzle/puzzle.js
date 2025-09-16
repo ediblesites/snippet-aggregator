@@ -1,4 +1,5 @@
 let tileImages = [];
+let tileMetadata = [];
 let board = [];
 let emptyPos = { row: 3, col: 3 };
 let lastMovePos = null;
@@ -13,8 +14,7 @@ function getApiUrl() {
     
     const protocol = window.location.protocol;
     const host = window.location.host;
-    return 'https://orchsoldev.wpenginepowered.com/wp-json/puzzle/v1/images';
-    //`${protocol}//${host}/wp-json/puzzle/v1/images`;
+    return `${protocol}//${host}/wp-json/puzzle/v1/images`;
 }
 
 async function loadImages() {
@@ -23,7 +23,16 @@ async function loadImages() {
         const data = await response.json();
         
         if (data.success && data.images && data.images.length >= 15) {
-            tileImages = data.images;
+            // Check if images are objects with url property or just strings
+            if (typeof data.images[0] === 'object' && data.images[0] && data.images[0].url) {
+                // New structure: extract URLs and metadata
+                tileImages = data.images.map(img => img.url);
+                tileMetadata = data.images;
+            } else {
+                // Old structure: images are just URL strings
+                tileImages = data.images;
+                tileMetadata = [];
+            }
             initializePuzzle();
         } else {
             throw new Error('Invalid API response or insufficient images');
@@ -68,6 +77,14 @@ function renderPuzzle() {
             const img = document.createElement('img');
             img.src = tileImages[value - 1];
             img.alt = `Tile ${value}`;
+            
+            // Add debugging data attributes if metadata is available
+            if (tileMetadata.length > 0 && tileMetadata[value - 1]) {
+                const metadata = tileMetadata[value - 1];
+                tile.dataset.integrationId = metadata.id || 'unknown';
+                tile.dataset.permalink = metadata.permalink || '';
+            }
+            
             tile.appendChild(img);
             tile.onclick = () => moveTile(row, col);
         }
