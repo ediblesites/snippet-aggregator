@@ -197,7 +197,8 @@ function render_template_search_results($template_post_id) {
         $result_html = str_replace('{{TITLE}}', $result['title'], $result_html);
         $result_html = str_replace('{{EXCERPT}}', $result['excerpt'], $result_html);
         
-        // Handle Gutenberg auto-prepending http:// to URL placeholder
+        // Handle Gutenberg auto-prepending http:// or https:// to URL placeholder
+        $result_html = str_replace('https://{{URL}}', esc_url($result['url']), $result_html);
         $result_html = str_replace('http://{{URL}}', esc_url($result['url']), $result_html);
         $result_html = str_replace('{{URL}}', esc_url($result['url']), $result_html);
         
