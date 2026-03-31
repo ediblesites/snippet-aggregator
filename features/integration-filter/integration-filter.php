@@ -20,7 +20,15 @@ add_shortcode('integration_filter_buttons', function() {
     ]);
     
     if (is_wp_error($terms) || empty($terms)) return '';
-    
+
+    // Push "Coming Soon" to the end
+    usort($terms, function($a, $b) {
+        $a_last = (strtolower($a->name) === 'coming soon');
+        $b_last = (strtolower($b->name) === 'coming soon');
+        if ($a_last !== $b_last) return $a_last ? 1 : -1;
+        return strcmp($a->name, $b->name);
+    });
+
     // Determine current selection
     $current = '';
     if ($is_integration_archive && isset($_GET['integ-type'])) {
