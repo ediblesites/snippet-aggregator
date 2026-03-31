@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Define plugin constants
-define('SNIPPET_AGGREGATOR_VERSION', '1.0.91');
+define('SNIPPET_AGGREGATOR_VERSION', get_file_data(__FILE__, ['Version' => 'Version'])['Version']);
 define('SNIPPET_AGGREGATOR_FILE', __FILE__);
 define('SNIPPET_AGGREGATOR_PATH', plugin_dir_path(__FILE__));
 define('SNIPPET_AGGREGATOR_URL', plugin_dir_url(__FILE__));
