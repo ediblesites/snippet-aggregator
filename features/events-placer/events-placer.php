@@ -20,11 +20,15 @@ add_shortcode('event_slug', 'render_event_slug');
  */
 function render_event_slug() {
     $upcoming_event = get_next_upcoming_event();
-    
+
     if (!$upcoming_event) {
-        return '';
+        // No event: the announcement bar is hidden via CSS in render_event_announcement(),
+        // but the [event_slug] shortcode still resolves standalone inside a hardcoded
+        // "https://[event_slug]" href. Falling back to '' left a dead href="https://".
+        // Fall back to the homepage so the href is always a valid URL.
+        return preg_replace('(^https?://)', '', home_url());
     }
-    
+
     $event_link = get_permalink($upcoming_event->ID);
     // Strip protocol to work with FSE button limitations
     return preg_replace('(^https?://)', '', $event_link);
