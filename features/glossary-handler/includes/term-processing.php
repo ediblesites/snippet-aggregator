@@ -59,30 +59,34 @@ function process_glossary_terms($content) {
         return $content;
     }
 
-    // Load content into DOM
+    // Load content into DOM. The XML encoding hint keeps UTF-8 intact without
+    // mb_convert_encoding('HTML-ENTITIES'), which is deprecated and, on the way
+    // back, decoded &lt; &gt; &amp; too: escaped code samples became live HTML.
     $dom = new DOMDocument();
-    
-    // Preserve UTF-8 encoding
-    $content = mb_convert_encoding($content, 'HTML-ENTITIES', 'UTF-8');
-    
-    // Wrap in temporary div to handle content fragments
-    $content = '<div>' . $content . '</div>';
-    
-    // Suppress warnings from malformed HTML
-    @$dom->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
-    
+    @$dom->loadHTML('<?xml encoding="UTF-8"><div>' . $content . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+
     // Get ignored tags for quick lookup
     $ignored_tags = array_map('strtolower', get_ignored_tags());
-    
+
     // Process text nodes
-    process_text_nodes($dom->getElementsByTagName('div')->item(0), $glossary_terms, $processed_terms, $ignored_tags);
-    
-    // Get processed content (remove wrapper div)
-    $processed_content = preg_replace('/^<div>|<\/div>$/', '', $dom->saveHTML());
-    
-    // Fix UTF-8 encoding
-    $processed_content = mb_convert_encoding($processed_content, 'UTF-8', 'HTML-ENTITIES');
-    
+    $wrapper = $dom->getElementsByTagName('div')->item(0);
+    if (!$wrapper) {
+        return $content;
+    }
+    $before = count($processed_terms);
+    process_text_nodes($wrapper, $glossary_terms, $processed_terms, $ignored_tags);
+
+    // No term found: return the content untouched rather than re-serialized.
+    if (count($processed_terms) === $before) {
+        return $content;
+    }
+
+    // Serialize the wrapper's children (saveHTML keeps entities escaped)
+    $processed_content = '';
+    foreach ($wrapper->childNodes as $child) {
+        $processed_content .= $dom->saveHTML($child);
+    }
+
     return $processed_content;
 }
 
