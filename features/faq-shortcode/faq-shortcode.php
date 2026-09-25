@@ -21,7 +21,17 @@ add_action('wp_enqueue_scripts', 'enqueue_faq_styles');
 // Get template from the faq-template page
 function get_faq_template() {
     $page = get_page_by_path('faq-template', OBJECT, ['page', 'utility']);
-    return $page ? $page->post_content : '';
+    if ($page) {
+        return $page->post_content;
+    }
+
+    // No faq-template page: fall back to a plain core Details block, so the
+    // active theme styles the FAQ like its other accordions.
+    return "<!-- wp:details {\"className\":\"faq-shortcode-item\"} -->\n"
+        . "<details class=\"wp-block-details faq-shortcode-item\"><summary>{QUESTION}</summary><!-- wp:paragraph -->\n"
+        . "<p>{ANSWER}</p>\n"
+        . "<!-- /wp:paragraph --></details>\n"
+        . "<!-- /wp:details -->\n";
 }
 
 // Generate FAQ blocks using the template
@@ -80,6 +90,10 @@ function get_faq_data_by_tags($tags = [], $operator = 'IN') {
     
     foreach ($faqs as $faq) {
         $content = get_the_content(null, false, $faq->ID);
+        // Drop block comment delimiters (answers are paragraph blocks), and run
+        // shortcodes such as [integration_count] that the answer may contain.
+        $content = trim(preg_replace('/<!--.*?-->/s', '', $content));
+        $content = do_shortcode($content);
         // Remove opening and closing <p> tags, replace middle </p><p> with <br>
         $content = preg_replace('/^<p[^>]*>/', '', $content);
         $content = preg_replace('/<\/p>$/', '', $content);
@@ -121,6 +135,6 @@ function faq_shortcode($atts) {
     
     $block_markup = generate_faq_blocks($faq_data);
     
-    return '<div style="margin-top:30px;">' . do_blocks($block_markup) . '</div>';
+    return '<div class="faq-shortcode">' . do_blocks($block_markup) . '</div>';
 }
 add_shortcode('faq', 'faq_shortcode'); 

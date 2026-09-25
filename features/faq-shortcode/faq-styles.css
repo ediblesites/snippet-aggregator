@@ -17,3 +17,7 @@
     margin-left: auto;
     margin-right: auto;
 } 
+/* Space above the FAQ list. :where() keeps it weaker than a block layout's gap. */
+:where(.faq-shortcode) {
+    margin-top: 30px;
+}
