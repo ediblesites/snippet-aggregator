@@ -105,7 +105,9 @@ function process_text_nodes($node, $glossary_terms, &$processed_terms, $ignored_
 
     // Process text node
     if ($node->nodeType === XML_TEXT_NODE) {
-        $text = $node->nodeValue;
+        // Escape the text first: it goes back in through appendXML(), which fails
+        // (and would drop the text) on a bare "&" or "<".
+        $text = htmlspecialchars($node->nodeValue, ENT_NOQUOTES | ENT_XML1, 'UTF-8');
         $modified = false;
 
         foreach ($glossary_terms as $term_data) {
@@ -118,12 +120,18 @@ function process_text_nodes($node, $glossary_terms, &$processed_terms, $ignored_
             }
 
             // Create pattern for whole word matching (case-insensitive)
-            $pattern = '/\b' . preg_quote($term, '/') . '\b/i';
+            // (?<!&) keeps a term such as "amp" from matching inside an entity like &amp;
+            $pattern = '/(?<!&)\b' . preg_quote(htmlspecialchars($term, ENT_NOQUOTES | ENT_XML1, 'UTF-8'), '/') . '\b/iu';
 
             // Check if term exists in this text node
             if (preg_match($pattern, $text)) {
                 // Replace first occurrence only
-                $text = preg_replace($pattern, "<dfn title=\"$definition\">$0</dfn>", $text, 1);
+                // Focusable, so the definition shows on hover, keyboard focus and tap;
+                // styles.php draws the tooltip from data-definition.
+                $attr = htmlspecialchars(html_entity_decode($definition, ENT_QUOTES | ENT_HTML5, 'UTF-8'), ENT_QUOTES | ENT_XML1, 'UTF-8');
+                $text = preg_replace_callback($pattern, function ($m) use ($attr) {
+                    return '<dfn class="glossary-term" tabindex="0" data-definition="' . $attr . '" aria-description="' . $attr . '">' . $m[0] . '</dfn>';
+                }, $text, 1);
                 $processed_terms[] = $term;
                 $modified = true;
                 break; // Process one term at a time
