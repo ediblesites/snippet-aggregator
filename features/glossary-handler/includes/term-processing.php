@@ -98,8 +98,8 @@ function process_text_nodes($node, $glossary_terms, &$processed_terms, $ignored_
         return;
     }
 
-    // Skip if this is an ignored tag
-    if ($node->nodeType === XML_ELEMENT_NODE && in_array(strtolower($node->nodeName), $ignored_tags)) {
+    // Skip if this is an ignored tag, or an element marked data-no-glossary (e.g. embedded CTAs)
+    if ($node->nodeType === XML_ELEMENT_NODE && (in_array(strtolower($node->nodeName), $ignored_tags) || $node->hasAttribute('data-no-glossary'))) {
         return;
     }
 
