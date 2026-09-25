@@ -39,14 +39,30 @@ add_shortcode('integration_filter_buttons', function() {
     
     // Base URL for "All" button
     $base_url = $is_integ_type_tax ? get_post_type_archive_link('integration') : remove_query_arg('integ-type');
-    
+
+    // Live filtering in the browser works where every integration is on the page:
+    // the unfiltered integrations archive. Elsewhere the pills are plain links
+    // that land on the filters (#integration-filters), not on the page hero.
+    $live = $is_integration_archive && $current === '';
+    $anchor = $live ? '' : '#integration-filters';
+    if ($live) {
+        wp_enqueue_script(
+            'integration-filter-live',
+            plugins_url('integration-filter.js', __FILE__),
+            [],
+            filemtime(__DIR__ . '/integration-filter.js'),
+            ['in_footer' => true, 'strategy' => 'defer']
+        );
+    }
+
     ob_start();
+    echo '<nav id="integration-filters" class="integration-filter-nav" aria-label="' . esc_attr__('Filter integrations', 'snippet-aggregator') . '"' . ($live ? ' data-live' : '') . '>';
     echo '<div class="wp-block-buttons alignwide is-content-justification-center is-layout-flex wp-container-core-buttons-is-layout-cc423f81 wp-block-buttons-is-layout-flex" style="gap: 5px;">';
     
     // "All" button
     $all_active = $current === '';
     echo '<div class="wp-block-button ' . ($all_active ? 'is-style-button-brand-alt is-style-button-brand-alt--7' : 'is-style-outline is-style-outline--6') . '">';
-    echo '<a href="' . esc_url($base_url) . '" class="wp-block-button__link has-secondary-color has-text-color has-link-color ' . ($all_active ? '' : 'has-border-color has-primary-border-color has-border-color has-border-light-border') . ' wp-element-button"' . ($all_active ? '' : ' style="color:#3b5570b3"') . '>All</a>';
+    echo '<a href="' . esc_url($base_url . $anchor) . '" data-integ-type="" data-name="' . esc_attr__('All', 'snippet-aggregator') . '"' . ($all_active ? ' aria-current="page"' : '') . ' class=""wp-block-button__link has-secondary-color has-text-color has-link-color ' . ($all_active ? '' : 'has-border-color has-primary-border-color has-border-color has-border-light-border') . ' wp-element-button"' . ($all_active ? '' : ' style="color:#3b5570b3"') . '>All</a>';
     echo '</div>';
     
     foreach ($terms as $term) {
@@ -56,11 +72,13 @@ add_shortcode('integration_filter_buttons', function() {
         $url = get_term_link($term);
         
         echo '<div class="wp-block-button ' . ($is_active ? 'is-style-button-brand-alt is-style-button-brand-alt--7' : 'is-style-outline is-style-outline--6') . '">';
-        echo '<a href="' . esc_url($url) . '" class="wp-block-button__link has-secondary-color has-text-color has-link-color ' . ($is_active ? '' : 'has-border-color has-primary-border-color has-border-color has-border-light-border') . ' wp-element-button"' . ($is_active ? '' : ' style="color:#3b5570b3"') . '>' . esc_html($term->name) . '</a>';
+        echo '<a href="' . esc_url($url . $anchor) . '" data-integ-type="' . esc_attr($term->slug) . '" data-name="' . esc_attr($term->name) . '"' . ($is_active ? ' aria-current="page"' : '') . ' class=""wp-block-button__link has-secondary-color has-text-color has-link-color ' . ($is_active ? '' : 'has-border-color has-primary-border-color has-border-color has-border-light-border') . ' wp-element-button"' . ($is_active ? '' : ' style="color:#3b5570b3"') . '>' . esc_html($term->name) . '</a>';
         echo '</div>';
     }
     
     echo '</div>';
+    echo '<p class="integration-filter-status screen-reader-text" aria-live="polite"></p>';
+    echo '</nav>';
     return ob_get_clean();
 });
 
