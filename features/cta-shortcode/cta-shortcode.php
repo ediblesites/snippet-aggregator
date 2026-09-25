@@ -22,10 +22,33 @@ add_shortcode('cta', function ($atts) {
     if ($glossary !== false) remove_filter('the_content', 'process_glossary_terms', $glossary);
     $html = apply_filters('the_content', $post->post_content);
     if ($glossary !== false) add_filter('the_content', 'process_glossary_terms', $glossary);
+    // Mark every top-level element, so a CTA without an outer group is covered too.
+    $html = snippet_aggregator_cta_mark_no_glossary($html);
+    return $html;
+});
+
+/**
+ * Add data-no-glossary to every top-level element of the CTA's HTML.
+ */
+function snippet_aggregator_cta_mark_no_glossary($html) {
+    if (class_exists('WP_HTML_Processor')) {
+        $p = WP_HTML_Processor::create_fragment($html);
+        if ($p) {
+            $top = null;
+            while ($p->next_tag()) {
+                $depth = $p->get_current_depth();
+                if ($top === null) $top = $depth;
+                if ($depth === $top) $p->set_attribute('data-no-glossary', '');
+            }
+            $marked = $p->get_updated_html();
+            if (null === $p->get_last_error() && $marked !== '') return $marked;
+        }
+    }
+    // Fallback: mark the first element only.
     $tags = new WP_HTML_Tag_Processor($html);
     if ($tags->next_tag()) {
         $tags->set_attribute('data-no-glossary', '');
         $html = $tags->get_updated_html();
     }
     return $html;
-}); 
+}
