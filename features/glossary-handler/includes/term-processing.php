@@ -120,7 +120,8 @@ function process_text_nodes($node, $glossary_terms, &$processed_terms, $ignored_
             }
 
             // Create pattern for whole word matching (case-insensitive)
-            $pattern = '/\b' . preg_quote(htmlspecialchars($term, ENT_NOQUOTES | ENT_XML1, 'UTF-8'), '/') . '\b/iu';
+            // (?<!&) keeps a term such as "amp" from matching inside an entity like &amp;
+            $pattern = '/(?<!&)\b' . preg_quote(htmlspecialchars($term, ENT_NOQUOTES | ENT_XML1, 'UTF-8'), '/') . '\b/iu';
 
             // Check if term exists in this text node
             if (preg_match($pattern, $text)) {
